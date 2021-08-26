@@ -165,7 +165,7 @@ func (t *SSHTransport) Run(command string, timeout time.Duration) *SSHReply {
 		time.Sleep(time.Duration(10) * time.Millisecond)
 	}
 
-	sHistory := ""
+	var sHistory string
 
 	for {
 		// Read from the channel with a timeout
