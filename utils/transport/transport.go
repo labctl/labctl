@@ -157,7 +157,10 @@ func (t *SSHTransport) InChannel() {
 // Run a single command and wait for the reply
 func (t *SSHTransport) Run(command string, timeout time.Duration) *SSHReply {
 	if command != "" {
-		t.ses.Writeln(command)
+		_, err := t.ses.Writeln(command)
+		if err != nil {
+			log.Errorf("unable to send command: %s: %s", command, err)
+		}
 		log.Debugf("--> %s\n", command)
 		time.Sleep(time.Duration(10) * time.Millisecond)
 	}
@@ -231,7 +234,7 @@ func (t *SSHTransport) Write(data *string) (int, []*SSHReply, error) {
 		if l == "" || strings.HasPrefix(l, "#") {
 			continue
 		}
-		c += 1
+		c++
 		r := t.Run(l, 5).Log(t.Target, log.WarnLevel)
 		if r.Result != "" {
 			res = append(res, r)

@@ -106,7 +106,9 @@ func ConfigSend(c *config.NodeConfig, action string) ([]*transport.SSHReply, err
 					msg = fmt.Sprintf("%s: COMMIT - %d lines", c.TargetNode.ShortName, l)
 				case ActionCompare:
 					reply, err = tx.K.Compare(tx)
-					tx.K.Discard(tx)
+					if err == nil {
+						_, err = tx.K.Discard(tx)
+					}
 				}
 				if reply.Result != "" {
 					msg += reply.LogString(c.TargetNode.ShortName, true, false)

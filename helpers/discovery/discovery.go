@@ -20,7 +20,7 @@ type DiscoverTemplate struct {
 	Kind, Name     string
 }
 
-func NewDiscoveryConfig(name string, kind string) (*DiscoverTemplate, error) {
+func NewDiscoveryConfig(name string, kind string, dirs ...string) (*DiscoverTemplate, error) {
 	path := utils.KindPath{
 		Kind: kind,
 		Name: name,
@@ -30,7 +30,7 @@ func NewDiscoveryConfig(name string, kind string) (*DiscoverTemplate, error) {
 		Name: name,
 		Kind: kind,
 	}
-	fn, err := path.Resolve()
+	fn, err := path.Resolve(dirs...)
 	if err != nil {
 		return nil, err
 	}

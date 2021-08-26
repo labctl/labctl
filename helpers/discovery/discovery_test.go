@@ -19,14 +19,14 @@ func AssertHasPrefix(t *testing.T, str, substr string) {
 
 func TestLoad(t *testing.T) {
 	c := DiscoverTemplate{}
-
 	p := utils.KindPath{
 		Kind: "vr-sros",
 		Name: "interfaces",
 		Ext:  "yml",
 	}
 	ps, _ := p.Resolve("../../templates")
-	c.Load(ps)
+	err := c.Load(ps)
+	assert.Assert(t, err)
 
 	assert.DeepEqual(t, c.Command, "/show router interface")
 	AssertHasPrefix(t, c.ParseTemplate, "Value Required,")
@@ -53,7 +53,8 @@ func TestParse(t *testing.T) {
     | to_SR-42-6                       Up        Up/Up       Network 1/1/c8/1:6
     |    39.42.6.39/24                                               n/a
     |    2010::272a:627/120                                          PREFERRED`
-	c, err := NewDiscoveryConfig("interfaces", "vr-sros")
+
+	c, err := NewDiscoveryConfig("interfaces", "vr-sros", "../../templates")
 	assert.Assert(t, err)
 
 	r, err := c.ParseShow(show)

@@ -32,7 +32,10 @@ func WriteYAML(filename string, data interface{}) error {
 	if filename == "" {
 		fmt.Printf("%s\n", out)
 	} else {
-		ioutil.WriteFile(filename, out, 0644)
+		err := ioutil.WriteFile(filename, out, 0644)
+		if err != nil {
+			return err
+		}
 		log.Infof("Written to %s", filename)
 	}
 	return nil
