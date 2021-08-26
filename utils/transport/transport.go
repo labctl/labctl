@@ -130,7 +130,7 @@ func (t *SSHTransport) InChannel() {
 					r := t.K.PromptParse(t, &parts[i])
 					if r == nil {
 						r = &SSHReply{
-							result: parts[i],
+							Result: parts[i],
 						}
 					}
 					t.in <- *r
@@ -142,8 +142,8 @@ func (t *SSHTransport) InChannel() {
 		}
 		log.Debugf("In Channel closing: %v", err)
 		t.in <- SSHReply{
-			result: tmpS,
-			prompt: "",
+			Result: tmpS,
+			Prompt: "",
 		}
 	}()
 
@@ -174,22 +174,22 @@ func (t *SSHTransport) Run(command string, timeout time.Duration) *SSHReply {
 		case <-time.After(timeout * time.Second):
 			log.Debugf("timeout waiting for prompt: %s, %v (%d)", command, time.Since(start), timeout)
 			return &SSHReply{
-				result:  sHistory,
-				command: command,
+				Result:  sHistory,
+				Command: command,
 			}
 		case ret := <-t.in:
 			if DebugCount > 1 {
 				ret.Debug(t.Target, command+"<--InChannel--")
 			}
 
-			if ret.result == "" && ret.prompt == "" {
+			if ret.Result == "" && ret.Prompt == "" {
 				log.Debugf("received zero?")
 				continue
 			}
 
-			if ret.prompt == "" && ret.result != "" {
+			if ret.Prompt == "" && ret.Result != "" {
 				// we should continue reading...
-				sHistory += ret.result
+				sHistory += ret.Result
 				if DebugCount > 1 {
 					log.Debugf("+")
 				}
@@ -198,9 +198,9 @@ func (t *SSHTransport) Run(command string, timeout time.Duration) *SSHReply {
 			}
 
 			if sHistory == "" {
-				rr = ret.result
+				rr = ret.Result
 			} else {
-				rr = sHistory + "#" + ret.result
+				rr = sHistory + "#" + ret.Result
 				sHistory = ""
 			}
 			rr = strings.Trim(rr, " \n\r\t")
@@ -213,9 +213,9 @@ func (t *SSHTransport) Run(command string, timeout time.Duration) *SSHReply {
 				continue
 			}
 			res := &SSHReply{
-				result:  rr,
-				prompt:  ret.prompt,
-				command: command,
+				Result:  rr,
+				Prompt:  ret.Prompt,
+				Command: command,
 			}
 			res.Debug(t.Target, command+"<--RUN--")
 			return res
@@ -223,17 +223,21 @@ func (t *SSHTransport) Run(command string, timeout time.Duration) *SSHReply {
 	}
 }
 
-func (t *SSHTransport) Write(data *string) (int, error) {
+func (t *SSHTransport) Write(data *string) (int, []*SSHReply, error) {
 	c := 0
+	var res []*SSHReply
 	for _, l := range strings.Split(*data, "\n") {
 		l = strings.TrimSpace(l)
 		if l == "" || strings.HasPrefix(l, "#") {
 			continue
 		}
 		c += 1
-		t.Run(l, 5).Log(t.Target, log.WarnLevel)
+		r := t.Run(l, 5).Log(t.Target, log.WarnLevel)
+		if r.Result != "" {
+			res = append(res, r)
+		}
 	}
-	return c, nil
+	return c, res, nil
 }
 
 // Connect to a host

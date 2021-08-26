@@ -13,7 +13,7 @@ import (
 // Debug Level
 var DebugCount int
 
-// path to the topology file
+// path to the topology file(s)
 var TopoFiles []string
 
 func LoadTopoFiles(topoFiles ...string) (map[string]nodes.Node, map[int]*types.Link, error) {
@@ -21,6 +21,9 @@ func LoadTopoFiles(topoFiles ...string) (map[string]nodes.Node, map[int]*types.L
 	var nodes map[string]nodes.Node
 	var links map[int]*types.Link
 
+	if len(topoFiles) == 0 {
+		topoFiles = TopoFiles
+	}
 	if len(topoFiles) == 0 {
 		return nil, nil, fmt.Errorf("specify at least one topology file (--topo / -t)")
 	}

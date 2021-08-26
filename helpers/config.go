@@ -19,7 +19,7 @@ var TemplatePaths []string
 // Template names to use
 var TemplateNames []string
 
-// Render configurtion and perform the action
+// Render configuration and perform the action
 func ConfigRun(action string) error {
 
 	err := validateSendAction(action)
@@ -54,7 +54,7 @@ func ConfigRun(action string) error {
 			log.Fatalf("Invalid node in filter: %s", node)
 		}
 
-		err = ConfigSend(cs, action)
+		_, err = ConfigSend(cs, action)
 		if err != nil {
 			log.Errorf("%s: %s", cs.TargetNode.ShortName, err)
 		}
@@ -66,9 +66,10 @@ func ConfigRun(action string) error {
 }
 
 // Load the topo files and prepare the variables
+// topoFiles is OPTIONAL. If not supplied, use the config flag TopoFiles
 func LoadAndPrep(topoFiles ...string) (map[string]*config.NodeConfig, error) {
 
-	nodes, links, err := LoadTopoFiles(TopoFiles...)
+	nodes, links, err := LoadTopoFiles(topoFiles...)
 	if err != nil {
 		return nil, err
 	}

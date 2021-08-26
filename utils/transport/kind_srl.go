@@ -12,9 +12,9 @@ func (sk *SSHKindSRL) Start(s *SSHTransport, transaction bool) error {
 	s.PromptChar = "#" // ensure it's '#'
 	r0 := s.Run("enter candidate private", 5)
 	r1 := s.Run("discard stay", 2)
-	if !strings.Contains(r1.result, "Nothing to discard") {
-		r0.result += "; " + r1.result
-		r0.command += "; " + r1.command
+	if !strings.Contains(r1.Result, "Nothing to discard") {
+		r0.Result += "; " + r1.Result
+		r0.Command += "; " + r1.Command
 	}
 	r0.Log(s.Target)
 	return nil
@@ -22,10 +22,10 @@ func (sk *SSHKindSRL) Start(s *SSHTransport, transaction bool) error {
 
 func (sk *SSHKindSRL) Commit(s *SSHTransport) (*SSHReply, error) {
 	r := s.Run("commit now", 10)
-	if strings.Contains(r.result, "All changes have been committed") {
-		r.result = ""
+	if strings.Contains(r.Result, "All changes have been committed") {
+		r.Result = ""
 	} else {
-		return r, fmt.Errorf("could not commit '%s'", r.result)
+		return r, fmt.Errorf("could not commit '%s'", r.Result)
 	}
 	return r, nil
 }

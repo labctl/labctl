@@ -42,7 +42,7 @@ func promptParseNoSpaces(in *string, promptChar string, lines int) *SSHReply {
 		n = 0
 	}
 	return &SSHReply{
-		result: (*in)[:n],
-		prompt: (*in)[n:] + promptChar,
+		Result: (*in)[:n],
+		Prompt: (*in)[n:] + promptChar,
 	}
 }

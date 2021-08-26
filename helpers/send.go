@@ -28,13 +28,15 @@ func validateSendAction(action string) error {
 	return fmt.Errorf("unsupported action: %s", action)
 }
 
-func ConfigSend(c *config.NodeConfig, action string) error {
+func ConfigSend(c *config.NodeConfig, action string) ([]*transport.SSHReply, error) {
 
 	var err error
 	ct, ok := c.TargetNode.Labels["config.transport"]
 	if !ok {
 		ct = "ssh"
 	}
+
+	var result []*transport.SSHReply
 
 	// Override host / port
 	// more generic approach than just containerlabs
@@ -47,7 +49,7 @@ func ConfigSend(c *config.NodeConfig, action string) error {
 			host = prt[0]
 			port, err = strconv.Atoi(prt[1])
 			if err != nil {
-				return fmt.Errorf("invalid ssh_ip %s", err)
+				return nil, fmt.Errorf("invalid ssh_ip %s", err)
 			}
 		}
 	}
@@ -63,14 +65,14 @@ func ConfigSend(c *config.NodeConfig, action string) error {
 			transport.HostKeyCallback(),
 		)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		tx.Port = port
 		tx.Target = c.TargetNode.ShortName
 
 		err = tx.Connect(host)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		defer tx.Close()
 
@@ -81,13 +83,17 @@ func ConfigSend(c *config.NodeConfig, action string) error {
 
 			err := tx.K.Start(tx, transaction)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
-			var l int
-			l, err = tx.Write(&d1)
+			l, sshr, err := tx.Write(&d1)
 			if err != nil {
-				return fmt.Errorf("could not write config: %s\n%s", err, d1)
+				return nil, fmt.Errorf("could not write config: %s\n%s", err, d1)
+			}
+
+			for i := range sshr {
+				result = append(result, sshr[i])
+
 			}
 
 			if transaction {
@@ -102,12 +108,12 @@ func ConfigSend(c *config.NodeConfig, action string) error {
 					reply, err = tx.K.Compare(tx)
 					tx.K.Discard(tx)
 				}
-				if reply.Result() != "" {
+				if reply.Result != "" {
 					msg += reply.LogString(c.TargetNode.ShortName, true, false)
 				}
 				if err != nil {
 					log.Error(msg)
-					return err
+					return nil, err
 				}
 				if len(msg) > 0 {
 					log.Info(msg)
@@ -132,22 +138,22 @@ func ConfigSend(c *config.NodeConfig, action string) error {
 
 		err = d.Open()
 		if err != nil {
-			return fmt.Errorf("failed to open driver; error: %+v", err)
+			return nil, fmt.Errorf("failed to open driver; error: %+v", err)
 		}
 		defer d.Close()
 
 		// send some configs
 		_, err = d.SendConfigs(c.Data)
 		if err != nil {
-			return fmt.Errorf("failed to send configs; error: %+v", err)
+			return nil, fmt.Errorf("failed to send configs; error: %+v", err)
 		}
 
 	case "grpc":
-		return fmt.Errorf("transport grpc not implemented yet")
+		return nil, fmt.Errorf("transport grpc not implemented yet")
 
 	default:
-		return fmt.Errorf("unknown transport: %s", ct)
+		return nil, fmt.Errorf("unknown transport: %s", ct)
 	}
-	return nil
+	return result, nil
 
 }

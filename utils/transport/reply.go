@@ -9,7 +9,7 @@ import (
 )
 
 // The SSH reply, executed command and the prompt
-type SSHReply struct{ result, prompt, command string }
+type SSHReply struct{ Result, Prompt, Command string }
 
 // The LogString will include the entire SSHReply
 //   Each field will be prefixed by a character.
@@ -23,15 +23,15 @@ func (r *SSHReply) LogString(node string, linefeed, debug bool) string {
 	if linefeed {
 		s = "\n" + strings.Repeat(" ", 11)
 	}
-	s += node + " # " + r.command
+	s += node + " # " + r.Command
 	s += prefix + "| "
-	s += strings.Join(strings.Split(r.result, "\n"), prefix+"| ")
+	s += strings.Join(strings.Split(r.Result, "\n"), prefix+"| ")
 	if debug { // Add the prompt & more
 		s = "" + strings.Repeat(" ", ind) + s
 		s += prefix + "? "
-		s += strings.Join(strings.Split(r.prompt, "\n"), prefix+"? ")
+		s += strings.Join(strings.Split(r.Prompt, "\n"), prefix+"? ")
 		if DebugCount > 3 { // add bytestring
-			s += fmt.Sprintf("%s| %v%s ? %v", prefix, []byte(r.result), prefix, []byte(r.prompt))
+			s += fmt.Sprintf("%s| %v%s ? %v", prefix, []byte(r.Result), prefix, []byte(r.Prompt))
 		}
 
 	}
@@ -39,7 +39,7 @@ func (r *SSHReply) LogString(node string, linefeed, debug bool) string {
 }
 
 func (r *SSHReply) Log(node string, level ...log.Level) *SSHReply {
-	if r.result == "" {
+	if r.Result == "" {
 		return r
 	}
 	if len(level) == 0 {
@@ -66,8 +66,4 @@ func (r *SSHReply) Debug(node, message string) {
 	msg += fmt.Sprintf("(%s line %d)", fn, line)
 	msg += r.LogString(node, true, true)
 	log.Debug(msg)
-}
-
-func (r *SSHReply) Result() string {
-	return r.result
 }

@@ -3,20 +3,25 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/labctl/labctl/helpers"
 	"github.com/labctl/labctl/utils"
-	"github.com/sirikothe/gotextfsm"
 	"github.com/spf13/cobra"
-
-	log "github.com/sirupsen/logrus"
 )
 
-var infile string
+// Filename for the output, else to stdout
+var outputFile string
+
+const (
+	input    = "input"
+	output   = "output"
+	template = "template"
+)
 
 // configCmd represents the config command
 var discoverCmd = &cobra.Command{
 	Use:          "discover",
-	Short:        "discover a lab topology",
-	Long:         "discover a lab topology from running nodes\nreference: https://labctl.github.io/labctl/cmd/discover/",
+	Short:        "discover lab variables",
+	Long:         "discover lab variables from running nodes\nreference: https://labctl.github.io/labctl/cmd/discover/",
 	Aliases:      []string{"d"},
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -24,47 +29,51 @@ var discoverCmd = &cobra.Command{
 			return fmt.Errorf("unexpected arguments: %s", args)
 		}
 
-		template := `Value Required,Key interface (\w\S+)
-Value admin (Up|Down)
-Value oper_v4 (\S+)
-Value oper_v6 (\S+)
-Value mode (\S+)
-Value port_sap (\S+)
-Value List address ((\d+\.|[a-f\d]+:)\S+)
-Value List pfx_state (\S+)
-
-
-Start
-  ^[|\s]*.*?\s+(Up|Down) -> Continue.Record
-  ^[|\s]*${interface}\s+${admin}\s+${oper_v4}/${oper_v6}\s+${mode}\s+${port_sap}
-  ^[|\s]*${address}\s+${pfx_state}
-`
-		log.Infof("Template\n%s", template)
-		input := utils.LoadFile(infile)
-		//log.Infof("Input\n%s", input)
-
-		fsm := gotextfsm.TextFSM{}
-		err := fsm.ParseString(template)
+		res, err := helpers.DiscoverTopo("interfaces")
 		if err != nil {
-			return fmt.Errorf("error while parsing template: %s", err.Error())
+			return err
 		}
 
-		parser := gotextfsm.ParserOutput{}
+		return utils.WriteYAML(outputFile, res)
+	}}
 
-		err = parser.ParseTextString(input, fsm, true)
+var discoverFileCmd = &cobra.Command{
+	Use:          "file",
+	Short:        "discover lab variables",
+	Long:         "discover lab variables from a file containing CLI output\nreference: https://labctl.github.io/labctl/cmd/discover/",
+	Aliases:      []string{"f"},
+	SilenceUsage: true,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) > 0 {
+			return fmt.Errorf("unexpected arguments: %s", args)
+		}
+		file_in := cmd.Flag(input).Value.String()
+		file_tmpl := cmd.Flag(template).Value.String()
+
+		res, err := helpers.DiscoverFile(file_tmpl, file_in)
 		if err != nil {
-			return fmt.Errorf("error while parsing input '%s'", err.Error())
+			return err
 		}
 
-		utils.LogPretty("result:", parser.Dict)
-
-		// fmt.Printf("Parsed output: %+v\n", parser.Dict)
-		return nil
+		return utils.WriteYAML(outputFile, res)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(discoverCmd)
-	discoverCmd.Flags().StringVar(&infile, "file", "", "filename")
-	_ = discoverCmd.MarkFlagFilename("file")
+	discoverCmd.Flags().SortFlags = false
+	discoverCmd.Flags().StringSliceVarP(&helpers.NodeFilter, "filter", "f", []string{}, "comma separated list of nodes to include")
+	discoverCmd.Flags().StringVarP(&outputFile, output, "o", "", "write result to this file")
+	_ = discoverCmd.MarkFlagFilename(output)
+
+	discoverCmd.AddCommand(discoverFileCmd)
+	discoverFileCmd.Flags().SortFlags = false
+	discoverFileCmd.Flags().StringP(input, "i", "", "read cli from this file")
+	_ = discoverFileCmd.MarkFlagFilename(input, "*.txt", "*.log")
+	_ = discoverFileCmd.MarkFlagRequired(input)
+	discoverFileCmd.Flags().String(template, "", "file with the discovery template")
+	_ = discoverFileCmd.MarkFlagFilename(template, "*.yaml")
+	_ = discoverFileCmd.MarkFlagRequired(template)
+	discoverFileCmd.Flags().StringVarP(&outputFile, output, "o", "", "write result to this file")
+	_ = discoverFileCmd.MarkFlagFilename(output)
 }

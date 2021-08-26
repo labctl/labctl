@@ -13,15 +13,15 @@ func (sk *SSHKindVRSROS) Start(s *SSHTransport, transaction bool) error {
 	s.PromptChar = "#" // ensure it's '#'
 	//s.debug = true
 	r := s.Run("/environment more false", 5)
-	if r.result != "" {
+	if r.Result != "" {
 		log.Warnf("%s Are you in MD-Mode?%s", s.Target, r.LogString(s.Target, true, false))
 	}
 
 	if transaction {
 		r = s.Run("/configure global", 5)
-		r.result = strings.Replace(r.result, "#2054", "2054", 1)
-		r.result = strings.Replace(r.result, "INFO: CLI 2054: Entering global configuration mode", "", 1)
-		//r.result = strings.Replace(r.result, "Entering global configuration mode", "", 1)
+		r.Result = strings.Replace(r.Result, "#2054", "2054", 1)
+		r.Result = strings.Replace(r.Result, "INFO: CLI 2054: Entering global configuration mode", "", 1)
+		//r.Result = strings.Replace(r.Result, "Entering global configuration mode", "", 1)
 		r.Log(s.Target)
 		s.Run("discard /", 1).Log(s.Target)
 	}
@@ -50,8 +50,8 @@ func (sk *SSHKindVRSROS) PromptParse(s *SSHTransport, in *string) *SSHReply {
 	r := strings.LastIndex(*in, "\r\n\r\n")
 	if r > 0 {
 		return &SSHReply{
-			result: (*in)[:r],
-			prompt: (*in)[r+4:] + s.PromptChar,
+			Result: (*in)[:r],
+			Prompt: (*in)[r+4:] + s.PromptChar,
 		}
 	}
 	return nil

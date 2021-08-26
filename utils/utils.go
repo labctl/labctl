@@ -3,35 +3,65 @@ package utils
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
+	"reflect"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
-func LogPretty(msg string, val interface{}) {
-	outp, err := yaml.Marshal(val)
+// Log yaml data with optional message
+func LogYAML(data interface{}, msg ...string) {
+	outp, err := yaml.Marshal(data)
 	if err != nil {
 		log.Errorf("error: %v", err)
 	}
-	fmt.Printf("msg\n%s\n", outp)
+	if len(msg) == 0 {
+		fmt.Printf("%s\n", outp)
+	} else {
+		fmt.Printf("%s\n%s\n", strings.Join(msg, ", "), outp)
+	}
 }
 
-func LoadFile(filen string) string {
-	file, err := os.Open(filen)
+// Write YAML to a file (or stdout if no filename)
+func WriteYAML(filename string, data interface{}) error {
+	out, err := yaml.Marshal(data)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("invalid result: %v", err)
 	}
-	defer func() {
-		if err = file.Close(); err != nil {
-			log.Fatal(err)
+	if filename == "" {
+		fmt.Printf("%s\n", out)
+	} else {
+		ioutil.WriteFile(filename, out, 0644)
+		log.Infof("Written to %s", filename)
+	}
+	return nil
+}
+
+// Ensure the input is a valid 'dict'
+func Mapify(i interface{}) (map[string]interface{}, bool) {
+	value := reflect.ValueOf(i)
+	if value.Kind() == reflect.Map {
+		m := map[string]interface{}{}
+		for _, k := range value.MapKeys() {
+			m[fmt.Sprintf("%v", k)] = value.MapIndex(k).Interface()
 		}
-	}()
-
-	b, err := ioutil.ReadAll(file)
-	if err != nil {
-		log.Fatal(err)
+		return m, true
 	}
+	return map[string]interface{}{}, false
+}
 
-	return string(b)
+// Ensure the input is an array of 'dicts'
+func ArrayMapify(in interface{}) ([]map[string]interface{}, error) {
+	res := []map[string]interface{}{}
+	items := reflect.ValueOf(in)
+	for i := 0; i < items.Len(); i++ {
+		item := items.Index(i).Interface()
+		mapitem, ok := Mapify(item)
+		if !ok {
+			return nil, fmt.Errorf("expected a dictionary like map[string]interface{}, not %v", item)
+		}
+		res = append(res, mapitem)
+	}
+	return res, nil
 }
