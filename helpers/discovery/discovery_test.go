@@ -1,10 +1,12 @@
 package discovery
 
 import (
+	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
+	"github.com/labctl/labctl/utils"
+	log "github.com/sirupsen/logrus"
 	"gotest.tools/v3/assert"
 )
 
@@ -17,7 +19,14 @@ func AssertHasPrefix(t *testing.T, str, substr string) {
 
 func TestLoad(t *testing.T) {
 	c := DiscoverTemplate{}
-	c.Load("interfaces__vr-sros.yaml")
+
+	p := utils.KindPath{
+		Kind: "vr-sros",
+		Name: "interfaces",
+		Ext:  "yml",
+	}
+	ps, _ := p.Resolve("../../templates")
+	c.Load(ps)
 
 	assert.DeepEqual(t, c.Command, "/show router interface")
 	AssertHasPrefix(t, c.ParseTemplate, "Value Required,")
@@ -25,14 +34,17 @@ func TestLoad(t *testing.T) {
 }
 
 func TestAll(t *testing.T) {
-	files, err := filepath.Glob("*__*.yaml")
+	fp, _ := filepath.Abs("../../templates/*__*.yml")
+	files, err := filepath.Glob(fp)
+	wd, _ := os.Getwd()
+	log.Errorf("%s %s", wd, fp)
 	assert.Assert(t, err)
 	assert.Assert(t, len(files) > 1)
 	for _, file := range files {
-		kind := strings.TrimSuffix(file, filepath.Ext(file))
-		c, err := NewDiscoveryConfig("interfaces", kind)
+		log.Errorf("%s ", file)
+		c := DiscoverTemplate{}
+		err := c.Load(file)
 		assert.Assert(t, err)
-		assert.Assert(t, c != nil)
 	}
 }
 
@@ -61,6 +73,7 @@ func TestParse(t *testing.T) {
 	rp, err := c.ProcessShow(show, "")
 	assert.Assert(t, err)
 	exp2 := []map[string]interface{}{{
+		"i":   0,
 		"if":  "to_SR-42-6",
 		"ip":  "39.42.6.39/24",
 		"sap": "1/1/c8/1:6"},
