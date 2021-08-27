@@ -8,13 +8,14 @@ on:
 
 # test & lint jobs follows staticcheck.io
 # https://github.com/dominikh/go-tools/blob/master/.github/workflows/ci.yml
+# matrix.os: removed "windows-latest"
 
 jobs:
   test:
     name: "Run unit tests"
     strategy:
       matrix:
-        os: ["windows-latest", "ubuntu-latest", "macOS-latest"]
+        os: ["ubuntu-latest", "macOS-latest"]
         go: ["1.16.x", "1.17.x"]
     runs-on: ${{ matrix.os }}
     steps:
