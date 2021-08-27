@@ -75,8 +75,6 @@ func LoadAndPrep(topoFiles ...string) (map[string]*config.NodeConfig, error) {
 	}
 
 	return config.PrepareVars(nodes, links), nil
-
-	// template var stage
 }
 
 func validateRender(allConfig map[string]*config.NodeConfig) error {
