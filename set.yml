@@ -1,0 +1,7 @@
+colorize:
+  - regex: '\d+\.\d+\.\d+\.\d+(/\d+)?'
+    color: cyan
+  - regex: '(?i)(true|enable|valid|used)'
+    color: hiwhite,bold
+  - regex: '(?i)(false|disable)'
+    color: red
