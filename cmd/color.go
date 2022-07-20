@@ -26,10 +26,13 @@ var colorCmd = &cobra.Command{
 		args = args[1:]
 
 		s := helpers.Settings{}
-		s.Load()
+		var err error
 
-		for _, c := range s.Colors {
-			c.Init()
+		if err=s.Load(); err!= nil {
+			return err
+		}
+		if err=s.InitColors(); err!= nil {
+			return err
 		}
 		log.Debugf("%v rules%v\n\n", len(s.Colors), s.Colors)
 		for _, r := range s.Colors {

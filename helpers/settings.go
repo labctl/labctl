@@ -30,5 +30,14 @@ func (s *Settings) Load() error {
 		return err
 	}
 	return nil
+}
 
+func (s *Settings) InitColors() error {
+	for _, c := range s.Colors {
+		err := c.Init()
+		if err!= nil {
+			return err
+		}
+}
+return nil
 }
