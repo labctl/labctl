@@ -31,7 +31,7 @@ func LoadTopoFiles(topoFiles ...string) (map[string]nodes.Node, map[int]*types.L
 	for i, topo := range topoFiles {
 		c, err := clab.NewContainerLab(
 			clab.WithTimeout(time.Second*30),
-			clab.WithTopoFile(topo),
+			clab.WithTopoFile(topo, ""),
 		)
 		if err != nil {
 			return nil, nil, err

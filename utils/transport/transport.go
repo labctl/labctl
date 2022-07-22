@@ -130,7 +130,7 @@ func (t *SSHTransport) InChannel() {
 					r := t.K.PromptParse(t, &parts[i])
 					if r == nil {
 						r = &SSHReply{
-							Result: parts[i],
+							Response: parts[i],
 						}
 					}
 					t.in <- *r
@@ -142,15 +142,15 @@ func (t *SSHTransport) InChannel() {
 		}
 		log.Debugf("In Channel closing: %v", err)
 		t.in <- SSHReply{
-			Result: tmpS,
-			Prompt: "",
+			Response: tmpS,
+			Prompt:   "",
 		}
 	}()
 
 	// Save first prompt
 	t.LoginMessage = t.Run("", 15)
 	if DebugCount > 2 {
-		t.LoginMessage.Log(t.Target)
+		t.LoginMessage.Log()
 	}
 }
 
@@ -177,22 +177,23 @@ func (t *SSHTransport) Run(command string, timeout time.Duration) *SSHReply {
 		case <-time.After(timeout * time.Second):
 			log.Debugf("timeout waiting for prompt: %s, %v (%d)", command, time.Since(start), timeout)
 			return &SSHReply{
-				Result:  sHistory,
-				Command: command,
+				Response: sHistory,
+				Command:  command,
+				Node:     t.Target,
 			}
 		case ret := <-t.in:
 			if DebugCount > 1 {
-				ret.Debug(t.Target, command+"<--InChannel--")
+				ret.Debug(command + "<--InChannel--")
 			}
 
-			if ret.Result == "" && ret.Prompt == "" {
+			if ret.Response == "" && ret.Prompt == "" {
 				log.Debugf("received zero?")
 				continue
 			}
 
-			if ret.Prompt == "" && ret.Result != "" {
+			if ret.Prompt == "" && ret.Response != "" {
 				// we should continue reading...
-				sHistory += ret.Result
+				sHistory += ret.Response
 				if DebugCount > 1 {
 					log.Debugf("+")
 				}
@@ -201,9 +202,9 @@ func (t *SSHTransport) Run(command string, timeout time.Duration) *SSHReply {
 			}
 
 			if sHistory == "" {
-				rr = ret.Result
+				rr = ret.Response
 			} else {
-				rr = sHistory + "#" + ret.Result
+				rr = sHistory + "#" + ret.Response
 				sHistory = ""
 			}
 			rr = strings.Trim(rr, " \n\r\t")
@@ -216,31 +217,26 @@ func (t *SSHTransport) Run(command string, timeout time.Duration) *SSHReply {
 				continue
 			}
 			res := &SSHReply{
-				Result:  rr,
-				Prompt:  ret.Prompt,
-				Command: command,
+				Response: rr,
+				Prompt:   ret.Prompt,
+				Command:  command,
+				Node:     t.Target,
 			}
-			res.Debug(t.Target, command+"<--RUN--")
+			res.Debug(command + "<--RUN--")
 			return res
 		}
 	}
 }
 
-func (t *SSHTransport) Write(data *string) (int, []*SSHReply, error) {
-	c := 0
+func (t *SSHTransport) Write(data []string) ([]*SSHReply, error) {
 	var res []*SSHReply
-	for _, l := range strings.Split(*data, "\n") {
-		l = strings.TrimSpace(l)
-		if l == "" || strings.HasPrefix(l, "#") {
-			continue
-		}
-		c++
-		r := t.Run(l, 5).Log(t.Target, log.WarnLevel)
-		if r.Result != "" {
+	for _, l := range data {
+		r := t.Run(l, 5).Log(log.WarnLevel)
+		if r.Response != "" {
 			res = append(res, r)
 		}
 	}
-	return c, res, nil
+	return res, nil
 }
 
 // Connect to a host
@@ -258,7 +254,11 @@ func (t *SSHTransport) Connect(host string) error {
 	}
 
 	// Start some client config
-	host = fmt.Sprintf("%s:%d", host, t.Port)
+	if strings.Contains(host, ":") {
+		host = fmt.Sprintf("[%s]:%d", host, t.Port)
+	} else {
+		host = fmt.Sprintf("%s:%d", host, t.Port)
+	}
 
 	ses_, err := NewSSHSession(host, t.SSHConfig)
 	if err != nil || ses_ == nil {

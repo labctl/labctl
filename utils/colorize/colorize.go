@@ -132,5 +132,6 @@ func stringToAttribute(colorString string) (color.Attribute, error) {
 			return offset + color.Attribute(i), nil
 		}
 	}
-	return 0, fmt.Errorf("invalid color: %s. Valid colors: %s, valid styles: %s prefix with: fg,bg,hi", colorString, strings.Join(colors, ","), strings.Join(styles, ","))
+	return 0, fmt.Errorf("invalid color: %s. Valid colors: %s, valid styles: %s prefix with: fg,bg,hi",
+		colorString, strings.Join(colors, ","), strings.Join(styles, ","))
 }

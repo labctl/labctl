@@ -63,7 +63,7 @@ func Spawn(colors []*Colorize, cmd string, args ...string) error {
 			nr, err := os.Stdin.Read(buf)
 			if err != nil {
 				close(stdInCh)
-				log.Errorf("Error in read string", err)
+				log.Errorf("Error in read string: %s", err)
 			}
 			stdInCh <- string(buf[:nr])
 		}

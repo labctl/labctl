@@ -47,7 +47,7 @@ func DiscoverTopo(templateName string) (map[string][]map[string]interface{}, err
 			continue
 		}
 
-		res, err := dis.ProcessShow(cli[0].Result, "")
+		res, err := dis.ProcessShow(cli[0].Response, "")
 		if err != nil {
 			return nil, err
 		}
