@@ -10,7 +10,7 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "labctl",
+	Use:   "ce", // "labctl"
 	Short: "control a lab environment",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if helpers.DebugCount > 0 {

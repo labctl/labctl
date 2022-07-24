@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 
 	"github.com/labctl/labctl/helpers/discovery"
+	"github.com/labctl/labctl/utils/tx"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -36,7 +37,7 @@ func DiscoverTopo(templateName string) (map[string][]map[string]interface{}, err
 		nc.Data = []string{dis.Command}
 		nc.Info = []string{dis.Command}
 
-		cli, err := ConfigSend(nc, ActionSend)
+		cli, err := ConfigSend(nc, tx.ASend)
 		if err != nil {
 			return nil, err
 		}

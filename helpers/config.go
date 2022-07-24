@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/labctl/labctl/utils/tx"
 	"github.com/srl-labs/containerlab/clab/config"
 	"github.com/srl-labs/containerlab/clab/config/transport"
 
@@ -20,14 +21,15 @@ var TemplatePaths []string
 var TemplateNames []string
 
 // Render configuration and perform the action
-func ConfigRun(action string) error {
+func ConfigRun(actionStr string) error {
 
-	err := validateSendAction(action)
+	action, err := tx.ParseActionString(actionStr)
 	if err != nil {
 		return err
 	}
 
 	transport.DebugCount = DebugCount
+	tx.DebugCount = DebugCount
 	config.DebugCount = DebugCount
 
 	allConfig, err := LoadAndPrep()
@@ -62,7 +64,6 @@ func ConfigRun(action string) error {
 	}
 
 	return nil
-
 }
 
 // Load the topo files and prepare the variables
@@ -77,8 +78,9 @@ func LoadAndPrep(topoFiles ...string) (map[string]*config.NodeConfig, error) {
 	return config.PrepareVars(nodes, links), nil
 }
 
+// Validate the rendered template
+// Check for any occurrences of "<no value>" / "<nil>"
 func validateRender(allConfig map[string]*config.NodeConfig) error {
-	// Check for any occurrences of "<no value>" / "<nil>"
 	fail_count := 0
 	for node, c := range allConfig {
 		for idx, ic := range c.Data {

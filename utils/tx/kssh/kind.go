@@ -1,4 +1,4 @@
-package transport
+package kssh
 
 import (
 	"strings"

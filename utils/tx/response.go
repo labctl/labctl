@@ -1,4 +1,4 @@
-package transport
+package tx
 
 import (
 	"fmt"
@@ -9,14 +9,14 @@ import (
 )
 
 // The SSH reply, executed command and the prompt
-type SSHReply struct{ Node, Source, Prompt, Command, Response string }
+type Response struct{ Node, Source, Prompt, Command, Response string }
 
-// The Slog will include the entire SSHReply
+// The Slog will include the entire Response
 //   Each field will be prefixed by a character.
 //   # - command sent
 //   | - result received
 //   ? - prompt part of the result
-func (r *SSHReply) Slog() string {
+func (r *Response) Slog() string {
 
 	s := fmt.Sprintf("%s execute '%s'", r.Node, r.Command)
 	if r.Source != "" {
@@ -36,7 +36,7 @@ func (r *SSHReply) Slog() string {
 	return s
 }
 
-func (r *SSHReply) Log(level ...log.Level) *SSHReply {
+func (r *Response) Log(level ...log.Level) *Response {
 	if r.Response == "" {
 		return r
 	}
@@ -55,7 +55,7 @@ func (r *SSHReply) Log(level ...log.Level) *SSHReply {
 	return r
 }
 
-func (r *SSHReply) Debug(message string) {
+func (r *Response) Debug(message string) {
 	msg := message
 	// if len(t) > 0 {
 	// 	msg = t[0].(string)

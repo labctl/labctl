@@ -42,7 +42,7 @@ var configSendCmd = &cobra.Command{
 		if len(args) > 0 {
 			return fmt.Errorf(unexpected, args)
 		}
-		return helpers.ConfigRun(helpers.ActionSend)
+		return helpers.ConfigRun("send")
 	},
 }
 
@@ -54,7 +54,7 @@ var configCompareCmd = &cobra.Command{
 		if len(args) > 0 {
 			return fmt.Errorf(unexpected, args)
 		}
-		return helpers.ConfigRun(helpers.ActionCompare)
+		return helpers.ConfigRun("compare")
 	},
 }
 
