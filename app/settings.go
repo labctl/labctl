@@ -1,4 +1,4 @@
-package helpers
+package app
 
 import (
 	"fmt"
@@ -8,6 +8,8 @@ import (
 	"github.com/labctl/labctl/utils"
 	"github.com/labctl/labctl/utils/colorize"
 	"gopkg.in/yaml.v2"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Settings struct {
@@ -35,9 +37,11 @@ func (s *Settings) Load() error {
 func (s *Settings) InitColors() error {
 	for _, c := range s.Colors {
 		err := c.Init()
-		if err!= nil {
+		if err != nil {
 			return err
 		}
-}
-return nil
+
+	}
+	log.Debugf("%v rules%v\n\n", len(s.Colors), s.Colors)
+	return nil
 }

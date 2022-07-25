@@ -13,17 +13,11 @@ import (
 // Debug Level
 var DebugCount int
 
-// path to the topology file(s)
-var TopoFiles []string
-
 func LoadTopoFiles(topoFiles ...string) (map[string]nodes.Node, map[int]*types.Link, error) {
 
 	var nodes map[string]nodes.Node
 	var links map[int]*types.Link
 
-	if len(topoFiles) == 0 {
-		topoFiles = TopoFiles
-	}
 	if len(topoFiles) == 0 {
 		return nil, nil, fmt.Errorf("specify at least one topology file (--topo / -t)")
 	}
@@ -44,16 +38,12 @@ func LoadTopoFiles(topoFiles ...string) (map[string]nodes.Node, map[int]*types.L
 		// Do some merging
 	}
 
-	err := ValidateNodeFilter(nodes)
-	if err != nil {
-		return nil, nil, err
-	}
 	return nodes, links, nil
 }
 
 // Ensure the NodeFilter contains valid nodes
 // If empty, ensure it contains ALL the nodes
-func ValidateNodeFilter(nodes map[string]nodes.Node) error {
+func ValidateNodeFilter(NodeFilter []string, nodes map[string]nodes.Node) error {
 	if len(NodeFilter) == 0 {
 		for n := range nodes {
 			NodeFilter = append(NodeFilter, n)

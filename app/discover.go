@@ -1,4 +1,4 @@
-package helpers
+package app
 
 import (
 	"io/ioutil"
@@ -8,9 +8,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func DiscoverTopo(templateName string) (map[string][]map[string]interface{}, error) {
+func DiscoverTopo(templateName string, ctx *Context) (map[string][]map[string]interface{}, error) {
 
-	allConfig, err := LoadAndPrep()
+	allConfig, err := LoadAndPrep(ctx.NodeFilter, templateName)
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +20,7 @@ func DiscoverTopo(templateName string) (map[string][]map[string]interface{}, err
 	// discovery templates per kind
 	allDis := make(map[string]*discovery.DiscoverTemplate)
 
-	for _, node := range NodeFilter {
+	for _, node := range ctx.NodeFilter {
 
 		nc := allConfig[node]
 

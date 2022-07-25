@@ -1,7 +1,9 @@
 package main
 
-import "github.com/labctl/labctl/cmd"
+import (
+	"github.com/labctl/labctl/app"
+)
 
 func main() {
-	cmd.Execute()
+	app.Main()
 }
