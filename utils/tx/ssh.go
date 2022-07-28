@@ -184,7 +184,7 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 		changes := len(result) - istart
 
 		if action == ACommit {
-			msg := fmt.Sprintf("%s comitted %d lines", st.TargetNode.LongName, count)
+			msg := fmt.Sprintf("%s committed %d lines", st.TargetNode.LongName, count)
 			if changes > 0 {
 				msg += fmt.Sprintf("%d failed commands", changes)
 				log.Warnln(msg)

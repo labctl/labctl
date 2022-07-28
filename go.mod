@@ -8,6 +8,7 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/posener/complete v1.2.3
+	github.com/rs/cors v1.8.2
 	github.com/scrapli/scrapligo v1.1.1
 	github.com/sirikothe/gotextfsm v1.0.1-0.20200816110946-6aa2cfd355e4
 	github.com/sirupsen/logrus v1.8.1

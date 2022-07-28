@@ -3,11 +3,20 @@ repos:
     rev: v2.1.0
     hooks:
       - id: codespell
+        args:
+          - -L
+          - ASend,asend
+          - --skip
+          - "*.sum,*.mod"
+        # exclude: >
+        #   (?x)^(
+        #       go.(sum|mod)
+        #   )$
   - repo: https://github.com/syntaqx/git-hooks
     rev: v0.0.17
     hooks:
-    - id: forbid-binary
-    - id: go-fmt
-    - id: go-test
-    - id: go-mod-tidy
-    - id: shfmt
+      - id: forbid-binary
+      - id: go-fmt
+      - id: go-test
+      - id: go-mod-tidy
+      - id: shfmt

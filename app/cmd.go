@@ -4,20 +4,12 @@ import (
 	"os"
 
 	"github.com/alecthomas/kong"
+	"github.com/labctl/labctl/helpers"
 	"github.com/posener/complete"
 	"github.com/willabides/kongplete"
 
 	log "github.com/sirupsen/logrus"
 )
-
-type Context struct {
-	Command    string // the Kong Command()
-	DebugCount int
-	Settings   Settings
-
-	TopoFile   string   // used by config, serve
-	NodeFilter []string // Used by config
-}
 
 var cli struct {
 	Debug    int    `help:"Enable debug mode." short:"d" type:"counter" group:"Global Flags"`
@@ -48,7 +40,7 @@ func Main() {
 	ctx, err := parser.Parse(os.Args[1:])
 	parser.FatalIfErrorf(err)
 
-	s := Settings{}
+	s := helpers.Settings{}
 	if s.Load(); err != nil {
 		ctx.FatalIfErrorf(err)
 	}
@@ -59,7 +51,7 @@ func Main() {
 	}
 
 	// Call the Run() method of the selected parsed command.
-	err = ctx.Run(&Context{
+	err = ctx.Run(&helpers.Context{
 		Command:    ctx.Command(),
 		DebugCount: cli.Debug,
 		Settings:   s,

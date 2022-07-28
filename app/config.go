@@ -11,14 +11,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Paths to search for templates
-//var TemplatePaths []string
-
-// Template names to use
-//var TemplateNames []string
-
 // Render configuration and perform the action
-func ConfigRun(actionStr string, ctx *Context) error {
+func ConfigRun(actionStr string, ctx *helpers.Context) error {
 
 	action, err := tx.ParseActionString(actionStr)
 	if err != nil {
@@ -87,7 +81,7 @@ func ConfigSend(c *config.NodeConfig, action tx.Action) ([]*tx.Response, error) 
 	return nil, fmt.Errorf("transport '%s' not implemented", transport)
 }
 
-func ConfigView(actionStr string, ctx *Context) error {
+func ConfigView(actionStr string, ctx *helpers.Context) error {
 	allConfig, err := LoadAndPrep(ctx.NodeFilter, ctx.TopoFile)
 	if err != nil {
 		return err
@@ -117,19 +111,20 @@ func ConfigView(actionStr string, ctx *Context) error {
 
 // Load the topo files and prepare the variables
 // topoFiles is OPTIONAL. If not supplied, use the config flag TopoFiles
-func LoadAndPrep(nodeFilter []string, topoFiles ...string) (map[string]*config.NodeConfig, error) {
+func LoadAndPrep(nodeFilter []string, topoFile string) (map[string]*config.NodeConfig, error) {
 
-	nodes, links, err := helpers.LoadTopoFiles(topoFiles...)
+	var topo helpers.Topo
+	err := topo.Load(topoFile)
 	if err != nil {
 		return nil, err
 	}
 
-	err = helpers.ValidateNodeFilter(nodeFilter, nodes)
+	err = helpers.ValidateNodeFilter(nodeFilter, topo.Nodes)
 	if err != nil {
 		return nil, err
 	}
 
-	return config.PrepareVars(nodes, links), nil
+	return config.PrepareVars(topo.Nodes, topo.Links), nil
 }
 
 // Validate the rendered template

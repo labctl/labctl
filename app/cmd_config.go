@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 
+	"github.com/labctl/labctl/helpers"
 	"github.com/srl-labs/containerlab/clab/config"
 )
 
@@ -26,7 +27,7 @@ type CmdConfig struct {
 	} `cmd:"" help:"Show variable inputs."`
 }
 
-func (r *CmdConfig) Run(ctx *Context) error {
+func (r *CmdConfig) Run(ctx *helpers.Context) error {
 	ctx.Command = ctx.Command[7:]
 	ctx.NodeFilter = r.Filter
 	ctx.TopoFile = r.Topo

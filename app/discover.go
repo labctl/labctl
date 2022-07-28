@@ -3,12 +3,13 @@ package app
 import (
 	"io/ioutil"
 
+	"github.com/labctl/labctl/helpers"
 	"github.com/labctl/labctl/helpers/discovery"
 	"github.com/labctl/labctl/utils/tx"
 	log "github.com/sirupsen/logrus"
 )
 
-func DiscoverTopo(templateName string, ctx *Context) (map[string][]map[string]interface{}, error) {
+func DiscoverTopo(templateName string, ctx *helpers.Context) (map[string][]map[string]interface{}, error) {
 
 	allConfig, err := LoadAndPrep(ctx.NodeFilter, templateName)
 	if err != nil {

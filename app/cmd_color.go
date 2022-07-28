@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 
+	"github.com/labctl/labctl/helpers"
 	"github.com/labctl/labctl/utils/colorize"
 )
 
@@ -10,7 +11,7 @@ type CmdColor struct {
 	Cmd []string `arg:""`
 }
 
-func (r *CmdColor) Run(ctx *Context) error {
+func (r *CmdColor) Run(ctx *helpers.Context) error {
 	if err := ctx.Settings.InitColors(); err != nil {
 		return err
 	}
