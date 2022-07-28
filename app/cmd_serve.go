@@ -42,20 +42,29 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 }
 
 func websock(w http.ResponseWriter, r *http.Request) {
-	log.Infof("a")
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
 		return
 	}
 	defer c.Close()
+
+	wsdata := helpers.NewWebSocketData()
+
 	for {
 		mt, message, err := c.ReadMessage()
 		if err != nil {
 			log.Println("read:", err)
 			break
 		}
-		log.Printf("recv: %s", message)
+		err = wsdata.Unmarshal(message)
+		if err != nil {
+			continue
+		}
+
+		log.Infof("recv %v", wsdata)
+		wsdata.Data.Print()
+
 		err = c.WriteMessage(mt, message)
 		if err != nil {
 			log.Println("write:", err)
