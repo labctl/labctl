@@ -50,6 +50,13 @@ func websock(w http.ResponseWriter, r *http.Request) {
 	defer c.Close()
 
 	wsdata := helpers.NewWebSocketData()
+	err = wsdata.Data.ReadFile(Ctx)
+	if err != nil {
+		log.Debugf("Could not read lab file %s", err.Error())
+	} else {
+		wsdata.Code = 100
+		c.WriteMessage(websocket.TextMessage, []byte(wsdata.AsJson()))
+	}
 
 	for {
 		mt, message, err := c.ReadMessage()
@@ -61,14 +68,19 @@ func websock(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			continue
 		}
-
-		log.Infof("recv %v", wsdata)
-		wsdata.Data.Print()
-
-		err = c.WriteMessage(mt, message)
-		if err != nil {
-			log.Println("write:", err)
-			break
+		switch wsdata.Code {
+		case 200: // hearbeat
+			log.Debugf(wsdata.Msg)
+		case 100: //save settings
+			wsdata.Data.WriteFile(Ctx)
+		case 1: // echo
+			err = c.WriteMessage(mt, message)
+			if err != nil {
+				log.Println("write:", err)
+				break
+			}
+		default:
+			log.Infof("recv %v", wsdata)
 		}
 	}
 }

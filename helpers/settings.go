@@ -7,7 +7,7 @@ import (
 
 	"github.com/labctl/labctl/utils"
 	"github.com/labctl/labctl/utils/colorize"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	log "github.com/sirupsen/logrus"
 )
