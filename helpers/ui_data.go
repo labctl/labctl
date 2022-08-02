@@ -11,15 +11,17 @@ import (
 )
 
 type layoutsNodes map[string]struct {
-	X, Y float32
+	X float32 `json:"x"`
+	Y float32 `json:"y"`
 }
 type layouts struct {
 	Nodes layoutsNodes `json:"nodes"`
 }
 
 type UiData struct {
-	Options map[string]interface{} `json:"options"` // A generic options dictionary for persistent UI options
-	Layouts layouts                `json:"layouts"` // layouts is a property of v-network-graph
+	Options   map[string]interface{} `json:"options"`   // A generic options dictionary for persistent UI options
+	Layouts   layouts                `json:"layouts"`   // layouts is a property of v-network-graph
+	Templates map[string]string      `json:"templates"` // Templates used by the UI etc
 }
 
 func NewUiData() UiData {
@@ -27,7 +29,8 @@ func NewUiData() UiData {
 		Layouts: layouts{
 			Nodes: make(layoutsNodes, 0),
 		},
-		Options: make(map[string]interface{}, 0),
+		Options:   make(map[string]interface{}, 0),
+		Templates: make(map[string]string),
 	}
 }
 

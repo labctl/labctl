@@ -7,9 +7,10 @@ import (
 )
 
 type WebSocketData struct {
-	Code int    `json:"code,omitempty"`
-	Msg  string `json:"msg,omitempty"`
-	Data UiData `json:"data,omitempty"`
+	Code     int               `json:"code,omitempty"`
+	Msg      string            `json:"msg,omitempty"`
+	Data     UiData            `json:"data,omitempty"`
+	Template WebSocketTemplate `json:"template,omitempty"`
 }
 
 func NewWebSocketData() WebSocketData {

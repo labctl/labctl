@@ -1,5 +1,7 @@
 package helpers
 
+import "text/template"
+
 type Context struct {
 	Command    string // the Kong Command()
 	DebugCount int
@@ -9,6 +11,8 @@ type Context struct {
 	NodeFilter []string // Used by config
 
 	Topo Topo
+
+	Template *template.Template
 }
 
 func (c *Context) Load(filename string) {

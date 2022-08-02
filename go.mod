@@ -7,6 +7,8 @@ require (
 	github.com/creack/pty v1.1.18
 	github.com/fatih/color v1.13.0
 	github.com/gorilla/websocket v1.4.2
+	github.com/hairyhenderson/gomplate/v3 v3.10.0
+	github.com/kellerza/template v0.0.5
 	github.com/posener/complete v1.2.3
 	github.com/rs/cors v1.8.2
 	github.com/scrapli/scrapligo v1.1.1
@@ -120,7 +122,6 @@ require (
 	github.com/gorilla/schema v1.2.0 // indirect
 	github.com/gosimple/slug v1.10.0 // indirect
 	github.com/gosimple/unidecode v1.0.0 // indirect
-	github.com/hairyhenderson/gomplate/v3 v3.10.0 // indirect
 	github.com/hairyhenderson/toml v0.4.2-0.20210923231440-40456b8e66cf // indirect
 	github.com/hashicorp/consul/api v1.10.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
@@ -144,7 +145,6 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/kellerza/template v0.0.5 // indirect
 	github.com/kevinburke/ssh_config v1.1.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/klauspost/cpuid v1.2.0 // indirect

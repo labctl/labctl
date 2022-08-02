@@ -69,16 +69,27 @@ func websock(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		switch wsdata.Code {
-		case 200: // hearbeat
-			log.Debugf(wsdata.Msg)
-		case 100: //save settings
-			wsdata.Data.WriteFile(Ctx)
 		case 1: // echo
 			err = c.WriteMessage(mt, message)
 			if err != nil {
 				log.Println("write:", err)
 				break
 			}
+		case 100: //save settings
+			wsdata.Data.WriteFile(Ctx)
+			Ctx.Template, err = helpers.ParseTemplates(wsdata.Data.Templates)
+			if err != nil {
+				log.Errorf("cannot parse tmeplate: %s", err.Error())
+			}
+		case 200: // hearbeat
+			log.Debugf(wsdata.Msg)
+		case 300: // render template
+			err := wsdata.Template.Render(Ctx)
+			if err != nil {
+				log.Errorf("%s", err)
+			}
+			c.WriteJSON(wsdata)
+
 		default:
 			log.Infof("recv %v", wsdata)
 		}
