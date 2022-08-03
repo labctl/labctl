@@ -11,8 +11,8 @@ import (
 )
 
 type layoutsNodes map[string]struct {
-	X float32 `json:"x"`
-	Y float32 `json:"y"`
+	X float32 `json:"x" yaml:"x,flow"`
+	Y float32 `json:"y" yaml:"y,flow"`
 }
 type layouts struct {
 	Nodes layoutsNodes `json:"nodes"`
