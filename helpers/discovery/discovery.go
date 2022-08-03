@@ -39,7 +39,6 @@ func NewDiscoveryConfig(name string, kind string, dirs ...string) (*DiscoverTemp
 
 // Load a yaml filename with the conversion
 func (c *DiscoverTemplate) Load(filename string) error {
-
 	yamlFile, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return err
@@ -65,7 +64,6 @@ func (c *DiscoverTemplate) Load(filename string) error {
 // Parses the show command using the TextFSM template
 // Returns TextFSM's parser.Dict
 func (c *DiscoverTemplate) ParseShow(show string) ([]map[string]interface{}, error) {
-
 	fsm := gotextfsm.TextFSM{}
 	err := fsm.ParseString(c.ParseTemplate)
 	if err != nil {

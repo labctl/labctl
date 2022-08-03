@@ -106,6 +106,6 @@ func (topo *Topo) Print() error {
 	}
 
 	by, _ := json.MarshalIndent(j, "", "  ")
-	os.Stdout.Write(by)
-	return nil
+	_, err = os.Stdout.Write(by)
+	return err
 }

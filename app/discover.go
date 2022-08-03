@@ -10,7 +10,6 @@ import (
 )
 
 func DiscoverTopo(templateName string, ctx *helpers.Context) (map[string][]map[string]interface{}, error) {
-
 	allConfig, err := LoadAndPrep(ctx.NodeFilter, templateName)
 	if err != nil {
 		return nil, err

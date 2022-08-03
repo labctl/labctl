@@ -91,7 +91,7 @@ func stringToAttribute(colorString string) (color.Attribute, error) {
 	colorStr := strings.Trim(strings.ToLower(colorString), " \t")
 
 	// Search through styles
-	var styles = []string{"reset", "bold", "faint", "italic", "blinkslow", "blinkrapid", "reversevideo", "concealed", "crossedout"}
+	styles := []string{"reset", "bold", "faint", "italic", "blinkslow", "blinkrapid", "reversevideo", "concealed", "crossedout"}
 	for i, s := range styles {
 		if s == colorStr {
 			return color.Attribute(i), nil
@@ -126,7 +126,7 @@ func stringToAttribute(colorString string) (color.Attribute, error) {
 	}
 
 	// search through colors
-	var colors = []string{"black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"}
+	colors := []string{"black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"}
 	for i, c := range colors {
 		if c == cres {
 			return offset + color.Attribute(i), nil

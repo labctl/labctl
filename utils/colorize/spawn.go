@@ -69,8 +69,14 @@ func Spawn(colors []*Colorize, cmd string, args ...string) error {
 		}
 	}()
 	go func() {
+		ecnt := 10
+		var err error
 		for in := range stdInCh {
-			ptmx.WriteString(in)
+			_, err = ptmx.WriteString(in)
+			if err != nil && ecnt > 0 {
+				ecnt -= 1
+				log.Errorf("%d: %s", ecnt, err)
+			}
 		}
 	}()
 
@@ -89,7 +95,6 @@ func Spawn(colors []*Colorize, cmd string, args ...string) error {
 var errInvalidWrite = errors.New("invalid write result")
 
 func CopyReplace(dst io.Writer, src io.Reader, regexes []*Colorize) (written int64, err error) {
-
 	var buf []byte
 	if buf == nil {
 		size := 32 * 1024

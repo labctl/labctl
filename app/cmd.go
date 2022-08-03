@@ -41,7 +41,7 @@ func Main() {
 	parser.FatalIfErrorf(err)
 
 	s := helpers.Settings{}
-	if s.Load(); err != nil {
+	if err = s.Load(); err != nil {
 		ctx.FatalIfErrorf(err)
 	}
 

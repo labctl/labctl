@@ -7,7 +7,7 @@ import (
 	"github.com/srl-labs/containerlab/clab/config"
 )
 
-const unexpected = "unexpected command: %v"
+// const unexpected = "unexpected command: %v"
 
 type CmdConfig struct {
 	Topo          string   `short:"t" help:"topology file" type:"existingfile"`
@@ -15,16 +15,11 @@ type CmdConfig struct {
 	TemplateList  []string `short:"l" help:"template names to render"`
 	Filter        []string `short:"f" help:"nodes to include" optional:""`
 
-	Commit struct {
-	} `cmd:"" help:"Commit configuration on the node."`
-	Compare struct {
-	} `cmd:"" help:"Compare rendered templates to the node's config."`
-	Send struct {
-	} `cmd:"" help:"Send commands to the node (i.e. show)"`
-	Template struct {
-	} `cmd:"" help:"Show rendered templates."`
-	Vars struct {
-	} `cmd:"" help:"Show variable inputs."`
+	Commit   struct{} `cmd:"" help:"Commit configuration on the node."`
+	Compare  struct{} `cmd:"" help:"Compare rendered templates to the node's config."`
+	Send     struct{} `cmd:"" help:"Send commands to the node (i.e. show)"`
+	Template struct{} `cmd:"" help:"Show rendered templates."`
+	Vars     struct{} `cmd:"" help:"Show variable inputs."`
 }
 
 func (r *CmdConfig) Run(ctx *helpers.Context) error {

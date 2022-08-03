@@ -60,24 +60,28 @@ func TestParse(t *testing.T) {
 	r, err := c.ParseShow(show)
 	assert.Assert(t, err)
 
-	expect := []map[string]interface{}{{"address": []string{"39.42.6.39/24", "2010::272a:627/120"},
+	expect := []map[string]interface{}{{
+		"address":   []string{"39.42.6.39/24", "2010::272a:627/120"},
 		"admin":     string("Up"),
 		"interface": string("to_SR-42-6"),
 		"mode":      string("Network"),
 		"oper_v4":   string("Up"),
 		"oper_v6":   string("Up"),
 		"pfx_state": []string{"n/a", "PREFERRED"},
-		"port_sap":  string("1/1/c8/1:6")}}
+		"port_sap":  string("1/1/c8/1:6"),
+	}}
 
 	assert.DeepEqual(t, r, expect)
 
 	rp, err := c.ProcessShow(show, "")
 	assert.Assert(t, err)
-	exp2 := []map[string]interface{}{{
-		"i":   0,
-		"if":  "to_SR-42-6",
-		"ip":  "39.42.6.39/24",
-		"sap": "1/1/c8/1:6"},
+	exp2 := []map[string]interface{}{
+		{
+			"i":   0,
+			"if":  "to_SR-42-6",
+			"ip":  "39.42.6.39/24",
+			"sap": "1/1/c8/1:6",
+		},
 	}
 	assert.DeepEqual(t, rp, exp2)
 
@@ -90,5 +94,4 @@ func TestParse(t *testing.T) {
 		"if": "to_SR-42-6",
 	}}
 	assert.DeepEqual(t, rp, exp2)
-
 }

@@ -12,6 +12,7 @@ repos:
         #   (?x)^(
         #       go.(sum|mod)
         #   )$
+
   - repo: https://github.com/syntaqx/git-hooks
     rev: v0.0.17
     hooks:
@@ -20,3 +21,24 @@ repos:
       - id: go-test
       - id: go-mod-tidy
       - id: shfmt
+
+  - repo: https://github.com/Bahjat/pre-commit-golang
+    rev: v1.0.1
+    hooks:
+      - id: go-vet
+      - id:
+          gofumpt
+          # requires github.com/mvdan/gofumpt
+          # $ go install mvdan.cc/gofumpt@latest
+      # - id:
+      #     go-err-check
+      #     # requires github.com/kisielk/errcheck
+      #     # $ go install github.com/kisielk/errcheck@latest
+      - id:
+          go-static-check
+          # install https://staticcheck.io/docs/
+          # $ go install honnef.co/go/tools/cmd/staticcheck@latest
+      # - id:
+      #     golangci-lint
+      #     # requires github.com/golangci/golangci-lint
+      #   args: [--config=.github/linters/.golangci.yml] # optional

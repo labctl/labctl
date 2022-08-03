@@ -117,7 +117,7 @@ func (t *SSHTransport) InChannel() {
 	go func() {
 		buf := make([]byte, 1024)
 		tmpS := ""
-		n, err := t.ses.In.Read(buf) //this reads the ssh terminal
+		n, err := t.ses.In.Read(buf) // this reads the ssh terminal
 		if err == nil {
 			tmpS = string(buf[:n])
 		}
@@ -197,7 +197,7 @@ func (t *SSHTransport) Run(command string, timeout time.Duration) *SSHReply {
 				if DebugCount > 1 {
 					log.Debugf("+")
 				}
-				//timeout = 2 // reduce timeout, node is already sending data
+				// timeout = 2 // reduce timeout, node is already sending data
 				continue
 			}
 
@@ -205,7 +205,7 @@ func (t *SSHTransport) Run(command string, timeout time.Duration) *SSHReply {
 				rr = ret.Response
 			} else {
 				rr = sHistory + "#" + ret.Response
-				sHistory = ""
+				// sHistory = ""
 			}
 			rr = strings.Trim(rr, " \n\r\t")
 
@@ -268,16 +268,16 @@ func (t *SSHTransport) Connect(host string) error {
 
 	log.Infof("%s: connected to %s\n", t.Target, host)
 	t.InChannel()
-	//Read to first prompt
+	// Read to first prompt
 	return nil
 }
 
 // Close the Session and channels
 // Part of the Transport interface
-func (t *SSHTransport) Close() {
+func (t *SSHTransport) Close() error {
 	if t.in != nil {
 		close(t.in)
 		t.in = nil
 	}
-	t.ses.Close()
+	return t.ses.Close()
 }

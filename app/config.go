@@ -13,7 +13,6 @@ import (
 
 // Render configuration and perform the action
 func ConfigRun(actionStr string, ctx *helpers.Context) error {
-
 	action, err := tx.ParseActionString(actionStr)
 	if err != nil {
 		return err
@@ -58,7 +57,6 @@ const vkTransport = "transport"
 
 // Send configuration to the action
 func ConfigSend(c *config.NodeConfig, action tx.Action) ([]*tx.Response, error) {
-
 	// Get the transport
 	transport, ok := c.TargetNode.Config.Vars[vkTransport]
 	if !ok {
@@ -106,13 +104,11 @@ func ConfigView(actionStr string, ctx *helpers.Context) error {
 		allConfig[n].Print(false, true)
 	}
 	return nil
-
 }
 
 // Load the topo files and prepare the variables
 // topoFiles is OPTIONAL. If not supplied, use the config flag TopoFiles
 func LoadAndPrep(nodeFilter []string, topoFile string) (map[string]*config.NodeConfig, error) {
-
 	var topo helpers.Topo
 	err := topo.Load(topoFile)
 	if err != nil {

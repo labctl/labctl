@@ -11,7 +11,7 @@ type SSHKindVRSROS struct{}
 
 func (sk *SSHKindVRSROS) Start(s *SSHTransport, transaction bool) error {
 	s.PromptChar = "#" // ensure it's '#'
-	//s.debug = true
+	// s.debug = true
 	r := s.Run("/environment more false", 5)
 	if r.Response != "" {
 		log.Warnf("%s Are you in MD-Mode?%s", s.Target, r.Slog())
@@ -21,7 +21,7 @@ func (sk *SSHKindVRSROS) Start(s *SSHTransport, transaction bool) error {
 		r = s.Run("/configure global", 5)
 		r.Response = strings.Replace(r.Response, "#2054", "2054", 1)
 		r.Response = strings.Replace(r.Response, "INFO: CLI 2054: Entering global configuration mode", "", 1)
-		//r.Result = strings.Replace(r.Result, "Entering global configuration mode", "", 1)
+		// r.Result = strings.Replace(r.Result, "Entering global configuration mode", "", 1)
 		r.Log()
 		s.Run("discard /", 1).Log()
 	}

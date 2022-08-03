@@ -17,7 +17,6 @@ type SSHReply struct{ Node, Source, Prompt, Command, Response string }
 //   | - result received
 //   ? - prompt part of the result
 func (r *SSHReply) Slog() string {
-
 	s := fmt.Sprintf("%s execute '%s'", r.Node, r.Command)
 	if r.Source != "" {
 		s += fmt.Sprintf(" (from template %s)", r.Source)

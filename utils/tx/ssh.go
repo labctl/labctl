@@ -73,7 +73,6 @@ func (st *SSHTx) Prepare(c *config.NodeConfig) (int, error) {
 }
 
 func (st *SSHTx) Send(action Action) ([]*Response, error) {
-
 	if len(st.Config) == 0 {
 		return nil, nil
 	}
@@ -87,7 +86,7 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 		ssh_user, ssh_pass = v[0], v[1]
 	}
 	ssh_user = get(st.Vars, vkSshUser, ssh_user)
-	ssh_user = get(st.Vars, vkSshPass, ssh_pass)
+	ssh_pass = get(st.Vars, vkSshPass, ssh_pass)
 
 	// Host & ports, allows an alternative to containerlab's host entries
 	ssh_host := get(st.Vars, vkSshHost, st.TargetNode.LongName)
@@ -102,7 +101,7 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 		if r, ok := KindMap[st.TargetNode.Kind]; ok {
 			ssh_platform = r.platform
 		} else {
-			return nil, fmt.Errorf("No platform definition for node kind %s", st.TargetNode.Kind)
+			return nil, fmt.Errorf("no platform definition for node kind %s", st.TargetNode.Kind)
 		}
 	}
 
@@ -150,9 +149,7 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 				actionCmds = r.commit
 			}
 		}
-		for _, c := range actionCmds {
-			cline.Commands = append(cline.Commands, c)
-		}
+		cline.Commands = append(cline.Commands, actionCmds...)
 
 		res, err := d.SendConfigs(cline.Commands, opoptions.WithNoStripPrompt())
 		if err != nil {

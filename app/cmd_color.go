@@ -21,5 +21,4 @@ func (r *CmdColor) Run(ctx *helpers.Context) error {
 		}
 	}
 	return colorize.Spawn(ctx.Settings.Colors, r.Cmd[0], r.Cmd[1:]...)
-
 }

@@ -31,7 +31,6 @@ func (sk *SSHKindSRL) Commit(s *SSHTransport) (*SSHReply, error) {
 }
 
 func (sk *SSHKindSRL) Compare(s *SSHTransport) (*SSHReply, error) {
-
 	return nil, nil
 }
 

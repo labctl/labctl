@@ -48,13 +48,13 @@ func NewSSHSession(host string, sshConfig *ssh.ClientConfig) (*SSHSession, error
 	}
 	err = session.RequestPty("dumb", 24, 100, modes)
 	if err != nil {
-		session.Close()
-		return nil, fmt.Errorf("pty request failed: %s", err)
+		err2 := session.Close()
+		return nil, fmt.Errorf("pty request failed: %s - %s", err, err2)
 	}
 
 	if err := session.Shell(); err != nil {
-		session.Close()
-		return nil, fmt.Errorf("session shell: %s", err)
+		err2 := session.Close()
+		return nil, fmt.Errorf("session shell: %s - %s", err, err2)
 	}
 
 	return &SSHSession{
@@ -68,7 +68,7 @@ func (ses *SSHSession) Writeln(command string) (int, error) {
 	return ses.Out.Write([]byte(command + "\r"))
 }
 
-func (ses *SSHSession) Close() {
+func (ses *SSHSession) Close() error {
 	log.Debugf("Closing session")
-	ses.Session.Close()
+	return ses.Session.Close()
 }

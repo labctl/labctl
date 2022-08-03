@@ -15,7 +15,7 @@ type Context struct {
 	Template *template.Template
 }
 
-func (c *Context) Load(filename string) {
+func (c *Context) Load(filename string) error {
 	c.TopoFile = filename
-	c.Topo.Load(c.TopoFile)
+	return c.Topo.Load(c.TopoFile)
 }

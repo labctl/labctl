@@ -46,8 +46,8 @@ func labFileName(p string) (string, fs.FileMode) {
 	s, err := os.Lstat(p)
 	fm := s.Mode()
 	if err != nil {
-		log.Errorf("Unable to read %s: %s", err.Error())
-		fm = 0664
+		log.Errorf("Unable to read %s: %s", p, err.Error())
+		fm = 0o664
 	}
 	ext := path.Ext(p)
 	p = p[0 : len(p)-len(ext)]
