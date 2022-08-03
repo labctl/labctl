@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 1
       - uses: actions/setup-go@v3
         with:
-          go-version-file: "path/to/go.mod"
+          go-version-file: "go.mod"
           cache: true
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
