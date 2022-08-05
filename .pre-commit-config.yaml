@@ -8,8 +8,10 @@ repos:
           - ASend,asend
           - --skip
           - "*.sum,*.mod"
+        exclude: ^helpers/frontend/html
         # exclude: >
         #   (?x)^(
+        #       .*/assets/.*
         #       go.(sum|mod)
         #   )$
 
@@ -17,6 +19,7 @@ repos:
     rev: v0.0.17
     hooks:
       - id: forbid-binary
+        exclude: ^helpers/frontend/html
       - id: go-fmt
       - id: go-test
       - id: go-mod-tidy

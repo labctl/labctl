@@ -2,11 +2,12 @@ package app
 
 import (
 	"encoding/json"
-	"html/template"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/websocket"
 	"github.com/labctl/labctl/helpers"
+	"github.com/labctl/labctl/helpers/frontend"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 )
@@ -31,14 +32,17 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/ws", websock)
-	mux.HandleFunc("/topo", http_topo)
-	mux.HandleFunc("/vars", http_vars)
-	mux.HandleFunc("/", home)
-
-	handler := cors.Default().Handler(mux)
+	mux.HandleFunc("/labctl/ws", websock)
+	mux.HandleFunc("/labctl/topo", http_topo)
+	mux.HandleFunc("/labctl/vars", http_vars)
 
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+
+	mux.Handle("/labctl/", http.StripPrefix("/labctl", frontend.LabctlFileServer()))
+
+	mux.HandleFunc("/", indexHandler)
+
+	handler := cors.Default().Handler(mux)
 
 	log.Infof("Serve on %s", r.Addr)
 	return http.ListenAndServe(r.Addr, handler)
@@ -92,6 +96,9 @@ func websock(w http.ResponseWriter, r *http.Request) {
 			err := wsdata.Template.Render(Ctx)
 			if err != nil {
 				log.Errorf("%s", err)
+			} else {
+				// if successful, we can clear the template & vars
+				wsdata.Template.ClearInput()
 			}
 			err = c.WriteJSON(wsdata)
 			if err != nil {
@@ -133,21 +140,8 @@ func http_vars(w http.ResponseWriter, req *http.Request) {
 	json_response(w, j)
 }
 
-func home(w http.ResponseWriter, r *http.Request) {
-	err := homeTemplate.Execute(w, "ws://"+r.Host+"/echo")
-	if err != nil {
-		log.Error(err)
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	if !strings.HasPrefix(r.URL.Path, "/labctl") {
+		// http.Redirect(w, r, "/labctl", http.StatusSeeOther)
 	}
 }
-
-var homeTemplate = template.Must(template.New("").Parse(`
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-</head>
-<body>
-No implemented
-</body>
-</html>
-`))

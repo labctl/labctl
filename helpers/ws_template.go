@@ -14,6 +14,7 @@ import (
 )
 
 type WebSocketTemplate struct {
+	Id         string                 `json:"id,omitempty"`
 	Name       string                 `json:"name,omitempty"`
 	Template   string                 `json:"template,omitempty"`
 	Vars       map[string]interface{} `json:"vars,omitempty"`
@@ -80,4 +81,9 @@ func (t *WebSocketTemplate) Render(ctx *Context) error {
 	log.Infof("Rendered: %s", t.Result)
 
 	return nil
+}
+
+func (t *WebSocketTemplate) ClearInput() {
+	t.Template = ""
+	t.Vars = nil
 }
