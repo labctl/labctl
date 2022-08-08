@@ -3,7 +3,6 @@ package app
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/websocket"
 	"github.com/labctl/labctl/helpers"
@@ -32,17 +31,19 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 
 	mux := http.NewServeMux()
 
+	// frontendServer := http.StripPrefix("/labctl", frontend.LabctlFileServer())
+	frontendServer := frontend.LabctlFileServer()
+
+	//	mux.HandleFunc("/", indexHandler)
 	mux.HandleFunc("/labctl/ws", websock)
 	mux.HandleFunc("/labctl/topo", http_topo)
 	mux.HandleFunc("/labctl/vars", http_vars)
+	mux.Handle("/labctl", frontendServer)
+	mux.Handle("/labctl/", frontendServer)
 
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
-	mux.Handle("/labctl/", http.StripPrefix("/labctl", frontend.LabctlFileServer()))
-
-	mux.HandleFunc("/", indexHandler)
-
-	handler := cors.Default().Handler(mux)
+	handler := cors.Default().Handler(&frontend.SlashFix{Mux: mux})
 
 	log.Infof("Serve on %s", r.Addr)
 	return http.ListenAndServe(r.Addr, handler)
@@ -140,8 +141,9 @@ func http_vars(w http.ResponseWriter, req *http.Request) {
 	json_response(w, j)
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	if !strings.HasPrefix(r.URL.Path, "/labctl") {
-		// http.Redirect(w, r, "/labctl", http.StatusSeeOther)
-	}
-}
+// func indexHandler(w http.ResponseWriter, r *http.Request) {
+// 	if !strings.HasPrefix(r.URL.Path, "/labctl") {
+// 		// json_response(w,"navigate to /labctl")
+// 		// http.Redirect(w, r, "/labctl", http.StatusSeeOther)
+// 	}
+// }
