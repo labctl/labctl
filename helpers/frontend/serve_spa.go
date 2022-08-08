@@ -40,7 +40,7 @@ func (spafs SPAFileSystem) Open(path string) (http.File, error) {
 		f.Close()
 		return spafs.index(path, "isDir()")
 	}
-	log.Infof("OK '%s'", path)
+	log.Debugf("OK '%s'", path)
 	return f, nil
 }
 
@@ -77,5 +77,8 @@ type SlashFix struct {
 func (h *SlashFix) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	r.URL.Path = strings.Replace(r.URL.Path, "//", "/", -1)
 	r.URL.Path = strings.TrimRight(r.URL.Path, "/")
+	if r.URL.Path == "" {
+		r.URL.Path = "/"
+	}
 	h.Mux.ServeHTTP(w, r)
 }

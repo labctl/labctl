@@ -18,7 +18,9 @@ type CmdServe struct {
 	Addr string `help:"Serve on addr." default:":8080"`
 }
 
-var upgrader = websocket.Upgrader{} // use default options
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool { return true },
+} // use default options
 
 var Ctx *helpers.Context
 
@@ -27,21 +29,25 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 	if err != nil {
 		return err
 	}
+	ctx.TemplatePaths, err = helpers.InitTemplatePaths(r.TemplatePaths)
+	if err != nil {
+		return err
+	}
 	Ctx = ctx
 
 	mux := http.NewServeMux()
 
-	// frontendServer := http.StripPrefix("/labctl", frontend.LabctlFileServer())
-	frontendServer := frontend.LabctlFileServer()
-
-	//	mux.HandleFunc("/", indexHandler)
+	mux.Handle("/favicon.ico", http.RedirectHandler("/labctl/favicon.ico", http.StatusSeeOther))
+	mux.Handle("/", http.RedirectHandler("/labctl", http.StatusSeeOther))
 	mux.HandleFunc("/labctl/ws", websock)
 	mux.HandleFunc("/labctl/topo", http_topo)
 	mux.HandleFunc("/labctl/vars", http_vars)
+	mux.HandleFunc("/labctl/templates", http_templates)
+	mux.HandleFunc("/error", http_error)
+
+	frontendServer := frontend.LabctlFileServer()
 	mux.Handle("/labctl", frontendServer)
 	mux.Handle("/labctl/", frontendServer)
-
-	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
 	handler := cors.Default().Handler(&frontend.SlashFix{Mux: mux})
 
@@ -112,10 +118,32 @@ func websock(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type jsonResponse struct {
+	Ok      bool        `json:"ok"`
+	Message string      `json:"msg,omitempty"`
+	Data    interface{} `json:"data"`
+}
+
 func json_response(w http.ResponseWriter, j interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	err := json.NewEncoder(w).Encode(j)
+	err := json.NewEncoder(w).Encode(jsonResponse{
+		Ok:   true,
+		Data: j,
+	})
+	if err != nil {
+		log.Errorf("could not encode json: %s", err)
+	}
+}
+
+func json_message(w http.ResponseWriter, message string, ok ...bool) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	err := json.NewEncoder(w).Encode(jsonResponse{
+		Ok:      len(ok) > 0 && ok[0],
+		Message: message,
+		Data:    struct{}{},
+	})
 	if err != nil {
 		log.Errorf("could not encode json: %s", err)
 	}
@@ -125,25 +153,32 @@ func http_topo(w http.ResponseWriter, req *http.Request) {
 	j, err := Ctx.Topo.AsJson()
 	if err != nil {
 		log.Error(err)
+		json_message(w, err.Error())
+		return
 	}
 	json_response(w, j)
 }
 
 func http_vars(w http.ResponseWriter, req *http.Request) {
-	if (*req).Method == "OPTIONS" {
-		return
-	}
-
 	j, err := Ctx.Topo.VarsAsJson()
 	if err != nil {
 		log.Error(err)
+		json_message(w, err.Error())
+		return
 	}
 	json_response(w, j)
 }
 
-// func indexHandler(w http.ResponseWriter, r *http.Request) {
-// 	if !strings.HasPrefix(r.URL.Path, "/labctl") {
-// 		// json_response(w,"navigate to /labctl")
-// 		// http.Redirect(w, r, "/labctl", http.StatusSeeOther)
-// 	}
-// }
+func http_templates(w http.ResponseWriter, req *http.Request) {
+	t, err := helpers.LoadTemplates(Ctx)
+	if err != nil {
+		log.Error(err)
+		json_message(w, err.Error())
+		return
+	}
+	json_response(w, t)
+}
+
+func http_error(w http.ResponseWriter, req *http.Request) {
+	json_message(w, "error!")
+}

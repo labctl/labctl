@@ -1,10 +1,13 @@
 package helpers
 
 import (
+	"embed"
+	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
+	"github.com/imdario/mergo"
 	"github.com/labctl/labctl/utils"
 	"github.com/labctl/labctl/utils/colorize"
 	"gopkg.in/yaml.v3"
@@ -16,15 +19,49 @@ type Settings struct {
 	Colors []*colorize.Colorize `yaml:"colorize"`
 }
 
-func (s *Settings) Load() error {
-	path := utils.Path{Path: "~/set.yml"}
-	_ = path.ExpandUser()
-	setByte, err := ioutil.ReadFile(path.Path)
+//go:embed settings.yml
+var defaultSettings embed.FS
+
+func NewSettings(defaults ...bool) Settings {
+	s := Settings{}
+	if len(defaults) > 0 {
+		in, err := defaultSettings.ReadFile("settings.yml")
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = s.unmarshal(in)
+		if err != nil {
+			log.Errorf("built in settings:\n%s", string(in))
+			log.Fatal(err)
+		}
+	}
+	return s
+}
+
+func (s *Settings) AddSettings(path string, silent bool) error {
+	new := NewSettings()
+	err := new.load(path, silent)
 	if err != nil {
+		mergo.MergeWithOverwrite(s, new)
+	}
+	return nil
+}
+
+func (s *Settings) load(path string, silent bool) error {
+	p := utils.Path{Path: "~/set.yml"}
+	_ = p.ExpandUser()
+	setByte, err := os.ReadFile(p.Path)
+	if err != nil {
+		if silent && errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
 		return err
 	}
+	return s.unmarshal(setByte)
+}
 
-	err = yaml.Unmarshal(setByte, &s)
+func (s *Settings) unmarshal(b []byte) error {
+	err := yaml.Unmarshal(b, &s)
 	if err != nil {
 		if strings.Contains(err.Error(), "unknown escape") {
 			err = fmt.Errorf("%s (regex requires single quote escape characters '')", err)
@@ -42,6 +79,6 @@ func (s *Settings) InitColors() error {
 		}
 
 	}
-	log.Debugf("%v rules%v\n\n", len(s.Colors), s.Colors)
+	log.Debugf("colorize: %v rules\n%v\n", len(s.Colors), s.Colors)
 	return nil
 }

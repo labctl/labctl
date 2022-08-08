@@ -8,6 +8,7 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/hairyhenderson/gomplate/v3 v3.10.0
+	github.com/imdario/mergo v0.3.12
 	github.com/kellerza/template v0.0.5
 	github.com/posener/complete v1.2.3
 	github.com/rs/cors v1.8.2
@@ -16,6 +17,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/srl-labs/containerlab v0.29.0
 	github.com/willabides/kongplete v0.3.0
+	github.com/wk8/go-ordered-map/v2 v2.0.0
 	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898
 	golang.org/x/term v0.0.0-20210916214954-140adaaadfaf
 	gopkg.in/yaml.v2 v2.4.0
@@ -48,6 +50,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.4.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.7.1 // indirect
 	github.com/aws/smithy-go v1.8.0 // indirect
+	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/c2h5oh/datasize v0.0.0-20200112174442-28bbd4740fee // indirect
@@ -138,7 +141,6 @@ require (
 	github.com/hashicorp/vault/api v1.1.1 // indirect
 	github.com/hashicorp/vault/sdk v0.2.1 // indirect
 	github.com/hpcloud/tail v1.0.0 // indirect
-	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jinzhu/copier v0.3.2 // indirect

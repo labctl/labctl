@@ -40,10 +40,10 @@ func Main() {
 	ctx, err := parser.Parse(os.Args[1:])
 	parser.FatalIfErrorf(err)
 
-	s := helpers.Settings{}
-	if err = s.Load(); err != nil {
-		ctx.FatalIfErrorf(err)
-	}
+	s := helpers.NewSettings(true)
+	// if err = s.AddSettings("~/.labctl.yml", true); err != nil {
+	// 	ctx.FatalIfErrorf(err)
+	// }
 
 	log.SetOutput(os.Stdout)
 	if cli.Debug > 0 {

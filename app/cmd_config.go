@@ -23,10 +23,17 @@ type CmdConfig struct {
 }
 
 func (r *CmdConfig) Run(ctx *helpers.Context) error {
+	var err error
+
 	ctx.Command = ctx.Command[7:]
 	ctx.NodeFilter = r.Filter
 	ctx.TopoFile = r.Topo
-
+	// Check if valid
+	ctx.TemplatePaths, err = helpers.InitTemplatePaths(r.TemplatePaths)
+	if err != nil {
+		return err
+	}
+	// Setup containerlab's config engine
 	config.TemplateNames = r.TemplateList
 	config.TemplatePaths = r.TemplatePaths
 
