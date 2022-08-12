@@ -41,10 +41,10 @@ func NewSettings(defaults ...bool) Settings {
 func (s *Settings) AddSettings(path string, silent bool) error {
 	new := NewSettings()
 	err := new.load(path, silent)
-	if err != nil {
-		mergo.MergeWithOverwrite(s, new)
+	if err == nil {
+		err = mergo.MergeWithOverwrite(s, new)
 	}
-	return nil
+	return err
 }
 
 func (s *Settings) load(path string, silent bool) error {
