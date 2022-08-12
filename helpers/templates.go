@@ -3,7 +3,6 @@ package helpers
 import (
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/labctl/labctl/utils"
@@ -40,7 +39,8 @@ func (t *Template) Load(ctx *Context) error {
 func LoadTemplates(ctx *Context) (Templates, error) {
 	res := make(Templates)
 
-	for pp := ctx.TemplatePaths.Oldest(); pp != nil; pp = pp.Prev() {
+	for pp := ctx.TemplatePaths.Oldest(); pp != nil; pp = pp.Next() {
+		log.Warnf("%s", pp.Value)
 		p := filepath.Join(pp.Value, "*.tmpl")
 		files, err := filepath.Glob(p)
 		if err != nil {
@@ -78,12 +78,13 @@ func LoadTemplates(ctx *Context) (Templates, error) {
 func InitTemplatePaths(paths []string) (*orderedmap.OrderedMap[string, string], error) {
 	res := orderedmap.New[string, string]()
 	for _, ps := range paths {
+		log.Infof(">> %s", ps)
 		p := utils.Path{Path: ps}
 		err := p.Resolve()
 		if err != nil {
 			return nil, fmt.Errorf("path %s: %s", ps, err)
 		}
-		_, n := path.Split(p.Path)
+		n := filepath.Base(p.Path)
 		i := 1
 		_, ok := res.Get(n)
 		for ok { // ensure a unique name
@@ -95,6 +96,7 @@ func InitTemplatePaths(paths []string) (*orderedmap.OrderedMap[string, string], 
 			i++
 		}
 		res.Set(n, p.Path)
+		log.Infof("name: %s path: %s", n, p.Path)
 	}
 	return res, nil
 }

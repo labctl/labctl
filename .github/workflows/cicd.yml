@@ -7,15 +7,15 @@ on:
     branches: [main]
 
 env:
-  GOVER: 1.18.4
-  GORELEASER_VER: v1.5.0
+  GORELEASER_VER: v1.10.3
 
 jobs:
-  test:
+  labctl-test:
     name: "Run static analysis & tests"
     runs-on: "ubuntu-22.04"
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
           fetch-depth: 1
       - uses: actions/setup-go@v3
@@ -33,3 +33,33 @@ jobs:
           install-go: false
       - run: "go vet ./..."
       - run: "go test --race ./..."
+
+  build-and-release:
+    runs-on: ubuntu-22.04
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs:
+      - labctl-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-go@v3
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - name: Cache build
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v3
+        with:
+          version: ${{ env.GORELEASER_VER }}
+          args: release --rm-dist --debug
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

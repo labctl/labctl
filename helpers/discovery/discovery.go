@@ -10,7 +10,7 @@ import (
 
 	"github.com/labctl/labctl/utils"
 	"github.com/sirikothe/gotextfsm"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type DiscoverTemplate struct {

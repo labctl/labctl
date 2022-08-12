@@ -20,11 +20,15 @@ type Topo struct {
 }
 
 func (topo *Topo) Load(topoFile string) error {
+	dl := log.GetLevel()
+	defer log.SetLevel(dl)
+	log.SetLevel(log.InfoLevel)
 	c, err := clab.NewContainerLab(
 		clab.WithTimeout(time.Second*30),
 		clab.WithTopoFile(topoFile, ""),
 	)
-	log.Infof("%s", topoFile)
+	log.SetLevel(dl)
+	log.Infof("Loaded %s", topoFile)
 	if err != nil {
 		return err
 	}

@@ -13,7 +13,7 @@ import (
 
 type CmdServe struct {
 	Topo          string   `short:"t" help:"Topology file" type:"existingfile"`
-	TemplatePaths []string `short:"p" help:"Paths to search for templates" type:"existingdir"`
+	TemplatePaths []string `short:"p" help:"Paths to search for templates" type:"path"`
 
 	Addr string `help:"Serve on addr." default:":8080"`
 }

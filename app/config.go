@@ -21,7 +21,7 @@ func ConfigRun(actionStr string, ctx *helpers.Context) error {
 	tx.DebugCount = ctx.DebugCount
 	config.DebugCount = ctx.DebugCount
 
-	allConfig, err := LoadAndPrep(ctx.NodeFilter, ctx.TopoFile)
+	allConfig, err := LoadAndPrep(&ctx.NodeFilter, ctx.TopoFile)
 	if err != nil {
 		return err
 	}
@@ -34,6 +34,13 @@ func ConfigRun(actionStr string, ctx *helpers.Context) error {
 	err = validateRender(allConfig)
 	if err != nil {
 		return err
+	}
+
+	if len(ctx.NodeFilter) == 0 {
+		// Ad al the nodes to the filter
+		for n := range allConfig {
+			ctx.NodeFilter = append(ctx.NodeFilter, n)
+		}
 	}
 
 	for _, node := range ctx.NodeFilter {
@@ -80,22 +87,20 @@ func ConfigSend(c *config.NodeConfig, action tx.Action) ([]*tx.Response, error) 
 }
 
 func ConfigView(actionStr string, ctx *helpers.Context) error {
-	allConfig, err := LoadAndPrep(ctx.NodeFilter, ctx.TopoFile)
+	allConfig, err := LoadAndPrep(&ctx.NodeFilter, ctx.TopoFile)
 	if err != nil {
 		return err
 	}
-	log.Printf("a")
 	if ctx.Command == "vars" {
 		for _, n := range ctx.NodeFilter {
 			allConfig[n].Print(true, false)
 		}
 		return nil
 	}
-	log.Printf("b")
-	ll := log.GetLevel()
-	log.SetLevel(log.ErrorLevel)
+	// ll := log.GetLevel()
+	// log.SetLevel(log.ErrorLevel)
 	err = config.RenderAll(allConfig)
-	log.SetLevel(ll)
+	// log.SetLevel(ll)
 	if err != nil {
 		return err
 	}
@@ -107,8 +112,7 @@ func ConfigView(actionStr string, ctx *helpers.Context) error {
 }
 
 // Load the topo files and prepare the variables
-// topoFiles is OPTIONAL. If not supplied, use the config flag TopoFiles
-func LoadAndPrep(nodeFilter []string, topoFile string) (map[string]*config.NodeConfig, error) {
+func LoadAndPrep(nodeFilter *[]string, topoFile string) (map[string]*config.NodeConfig, error) {
 	var topo helpers.Topo
 	err := topo.Load(topoFile)
 	if err != nil {

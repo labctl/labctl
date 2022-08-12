@@ -12,15 +12,15 @@ var DebugCount int
 
 // Ensure the NodeFilter contains valid nodes
 // If empty, ensure it contains ALL the nodes
-func ValidateNodeFilter(NodeFilter []string, nodes map[string]nodes.Node) error {
-	if len(NodeFilter) == 0 {
+func ValidateNodeFilter(NodeFilter *[]string, nodes map[string]nodes.Node) error {
+	if len(*NodeFilter) == 0 {
 		for n := range nodes {
-			NodeFilter = append(NodeFilter, n)
+			*NodeFilter = append(*NodeFilter, n)
 		}
 		return nil
 	}
 	mis := []string{}
-	for _, nn := range NodeFilter {
+	for _, nn := range *NodeFilter {
 		if _, ok := nodes[nn]; !ok {
 			mis = append(mis, nn)
 		}
