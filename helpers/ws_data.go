@@ -6,11 +6,24 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type WsCode int
+
+const (
+	WsRender    WsCode = 300
+	WsSave      WsCode = 100
+	WsEcho      WsCode = 1
+	WsConfigCmd WsCode = 400
+	WsConfigOk  WsCode = 401
+	WsConfigErr WsCode = 402
+)
+
 type WebSocketData struct {
-	Code     int               `json:"code,omitempty"`
-	Msg      string            `json:"msg,omitempty"`
-	Data     UiData            `json:"data,omitempty"`
-	Template WebSocketTemplate `json:"template,omitempty"`
+	Code WsCode `json:"code"`
+	Msg  string `json:"msg,omitempty"`
+	// Nodes are used by config template returns
+	Node     string             `json:"node,omitempty"`
+	Data     *UiData            `json:"data,omitempty"`
+	Template *WebSocketTemplate `json:"template,omitempty"`
 }
 
 func NewWebSocketData() WebSocketData {

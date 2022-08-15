@@ -24,8 +24,8 @@ type UiData struct {
 	Templates map[string]string      `json:"templates"` // Templates used by the UI etc
 }
 
-func NewUiData() UiData {
-	return UiData{
+func NewUiData() *UiData {
+	return &UiData{
 		Layouts: layouts{
 			Nodes: make(layoutsNodes, 0),
 		},

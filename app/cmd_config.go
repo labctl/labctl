@@ -2,12 +2,14 @@ package app
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/google/shlex"
+	"github.com/gorilla/websocket"
 	"github.com/labctl/labctl/helpers"
+	log "github.com/sirupsen/logrus"
 	"github.com/srl-labs/containerlab/clab/config"
 )
-
-// const unexpected = "unexpected command: %v"
 
 type CmdConfig struct {
 	Topo          string   `short:"t" help:"topology file" type:"existingfile"`
@@ -25,17 +27,34 @@ type CmdConfig struct {
 func (r *CmdConfig) Run(ctx *helpers.Context) error {
 	var err error
 
-	ctx.Command = ctx.Command[7:]
-	ctx.NodeFilter = r.Filter
-	ctx.TopoFile = r.Topo
-	// Check if valid
-	ctx.TemplatePaths, err = helpers.InitTemplatePaths(r.TemplatePaths)
-	if err != nil {
-		return err
+	if strings.HasPrefix(ctx.Command, "config ") { // Executed from the commandline
+		ctx.Command = strings.TrimPrefix(ctx.Command, "config ")
+		ctx.TopoFile = r.Topo
+		// Ensure paths are valid valid
+		ctx.TemplatePaths, err = helpers.InitTemplatePaths(r.TemplatePaths)
+		if err != nil {
+			return err
+		}
+
+	} else { // Executed form a websocket
+		log.Debugf("Websocket %s %v", ctx.Command, ctx)
+		if r.Topo != "" {
+			return fmt.Errorf("--topo/-t not allowed. Fixed at %s", Ctx.TopoFile)
+		}
+		if len(r.TemplatePaths) > 0 {
+			return fmt.Errorf(
+				"--template-paths/-p not allowed. Fixed at %s",
+				strings.Join(Ctx.TemplatePathsSlice(), ", "),
+			)
+		}
 	}
+	ctx.Output.Info("TST", "aa")
+
+	ctx.NodeFilter = r.Filter
+
 	// Setup containerlab's config engine
 	config.TemplateNames = r.TemplateList
-	config.TemplatePaths = r.TemplatePaths
+	config.TemplatePaths = ctx.TemplatePathsSlice()
 
 	switch ctx.Command {
 	case "send", "commit", "compare":
@@ -47,4 +66,28 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 	default:
 		return fmt.Errorf("unknown command %s", ctx.Command)
 	}
+}
+
+func ParseWebString(wsconn *websocket.Conn, cmd string) error {
+	args, err := shlex.Split(cmd)
+	if err != nil {
+		return err
+	}
+
+	// Parse using only the
+	var cli CmdConfig
+	p := GetCmdLineParser(&cli)
+	kctx, err := p.Parse(args)
+	if err != nil {
+		return err
+	}
+
+	// Copy the global context, update the output & command
+	nctx := Ctx
+	nctx.Output = &helpers.WebSocketOutput{
+		Conn: wsconn,
+	}
+	nctx.Command = kctx.Command()
+
+	return kctx.Run(nctx)
 }

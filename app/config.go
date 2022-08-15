@@ -47,12 +47,12 @@ func ConfigRun(actionStr string, ctx *helpers.Context) error {
 
 		cs, ok := allConfig[node]
 		if !ok {
-			log.Fatalf("Invalid node in filter: %s", node)
+			return fmt.Errorf("invalid node in filter: %s", node)
 		}
 
 		_, err = ConfigSend(cs, action)
 		if err != nil {
-			log.Errorf("%s: %s", cs.TargetNode.ShortName, err)
+			ctx.Output.Error(cs.TargetNode.ShortName, err.Error())
 		}
 
 	}
@@ -97,14 +97,10 @@ func ConfigView(actionStr string, ctx *helpers.Context) error {
 		}
 		return nil
 	}
-	// ll := log.GetLevel()
-	// log.SetLevel(log.ErrorLevel)
 	err = config.RenderAll(allConfig)
-	// log.SetLevel(ll)
 	if err != nil {
 		return err
 	}
-	log.Printf("c")
 	for _, n := range ctx.NodeFilter {
 		allConfig[n].Print(false, true)
 	}

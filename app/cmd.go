@@ -22,8 +22,8 @@ var cli struct {
 	InstallCompletions kongplete.InstallCompletions `cmd:"" help:"install shell completions"`
 }
 
-func Main() {
-	parser := kong.Must(&cli,
+func GetCmdLineParser(ast interface{}) *kong.Kong {
+	return kong.Must(ast,
 		kong.Name("labctl"),
 		kong.Description("Control your network lab."),
 		kong.UsageOnError(),
@@ -31,30 +31,40 @@ func Main() {
 			Compact: true,
 			Summary: false,
 		}))
+}
+
+// App wide context
+var Ctx *helpers.Context
+
+func Main() {
+	parser := GetCmdLineParser(&cli)
 
 	// Handle completion requests
 	kongplete.Complete(parser,
 		kongplete.WithPredictor("file", complete.PredictFiles("*")),
 	)
 
-	ctx, err := parser.Parse(os.Args[1:])
+	kctx, err := parser.Parse(os.Args[1:])
 	parser.FatalIfErrorf(err)
 
 	s := helpers.NewSettings(true)
-	// if err = s.AddSettings("~/.labctl.yml", true); err != nil {
-	// 	ctx.FatalIfErrorf(err)
-	// }
+	if err = s.AddSettings("~/.labctl.yml", true); err != nil {
+		kctx.FatalIfErrorf(err)
+	}
 
 	log.SetOutput(os.Stdout)
 	if cli.Debug > 0 {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	// Call the Run() method of the selected parsed command.
-	err = ctx.Run(&helpers.Context{
-		Command:    ctx.Command(),
+	Ctx = &helpers.Context{
+		Command:    kctx.Command(),
 		DebugCount: cli.Debug,
 		Settings:   s,
-	})
-	ctx.FatalIfErrorf(err)
+		Output:     &helpers.LogOutput{},
+	}
+
+	// Call the Run() method of the selected parsed command.
+	err = kctx.Run(Ctx)
+	kctx.FatalIfErrorf(err)
 }

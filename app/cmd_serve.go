@@ -18,12 +18,6 @@ type CmdServe struct {
 	Addr string `help:"Serve on addr." default:":8080"`
 }
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool { return true },
-} // use default options
-
-var Ctx *helpers.Context
-
 func (r *CmdServe) Run(ctx *helpers.Context) error {
 	err := ctx.Load(r.Topo)
 	if err != nil {
@@ -33,7 +27,6 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 	if err != nil {
 		return err
 	}
-	Ctx = ctx
 
 	mux := http.NewServeMux()
 
@@ -55,8 +48,12 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 	return http.ListenAndServe(r.Addr, handler)
 }
 
+var wsupgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool { return true },
+}
+
 func websock(w http.ResponseWriter, r *http.Request) {
-	c, err := upgrader.Upgrade(w, r, nil)
+	c, err := wsupgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
 		return
@@ -87,7 +84,6 @@ func websock(w http.ResponseWriter, r *http.Request) {
 		}
 		switch wsdata.Code {
 		case 1: // hearbeat
-			log.Debugf(wsdata.Msg)
 		case 2: // echo
 			err = c.WriteMessage(mt, message)
 			if err != nil {
@@ -110,6 +106,12 @@ func websock(w http.ResponseWriter, r *http.Request) {
 			err = c.WriteJSON(wsdata)
 			if err != nil {
 				log.Errorf("could not write to the websocket: %s", err)
+			}
+
+		case 400: // config command
+			err = ParseWebString(c, wsdata.Msg)
+			if err != nil {
+				c.WriteMessage(400, []byte("ss"))
 			}
 
 		default:

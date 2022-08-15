@@ -6,6 +6,7 @@ require (
 	github.com/alecthomas/kong v0.6.1
 	github.com/creack/pty v1.1.18
 	github.com/fatih/color v1.13.0
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/gorilla/websocket v1.5.0
 	github.com/hairyhenderson/gomplate/v3 v3.11.1
 	github.com/imdario/mergo v0.3.13
@@ -144,7 +145,6 @@ require (
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/go-intervals v0.0.2 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
-	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/trillian v1.4.1 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/google/wire v0.5.0 // indirect
