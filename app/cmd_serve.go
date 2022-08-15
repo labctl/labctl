@@ -111,7 +111,11 @@ func websock(w http.ResponseWriter, r *http.Request) {
 		case 400: // config command
 			err = ParseWebString(c, wsdata.Msg)
 			if err != nil {
-				c.WriteMessage(400, []byte("ss"))
+				err = c.WriteMessage(400, []byte("ss"))
+				if err != nil {
+					log.Errorf("%s", err)
+				}
+
 			}
 
 		default:

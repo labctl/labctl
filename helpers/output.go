@@ -27,17 +27,23 @@ type WebSocketOutput struct {
 }
 
 func (ws *WebSocketOutput) Info(node string, msg string) {
-	ws.Conn.WriteJSON(WebSocketData{
+	err := ws.Conn.WriteJSON(WebSocketData{
 		Code: WsConfigOk,
 		Node: node,
 		Msg:  msg,
 	})
+	if err != nil {
+		log.Errorf(err.Error())
+	}
 }
 
 func (ws *WebSocketOutput) Error(node string, msg string) {
-	ws.Conn.WriteJSON(WebSocketData{
+	err := ws.Conn.WriteJSON(WebSocketData{
 		Code: WsConfigErr,
 		Node: node,
 		Msg:  msg,
 	})
+	if err != nil {
+		log.Errorf(err.Error())
+	}
 }
