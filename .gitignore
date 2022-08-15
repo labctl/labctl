@@ -17,3 +17,16 @@ labctl
 # vendor/
 
 dist/
+
+# Editor directories and files
+*.code-workspace
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
