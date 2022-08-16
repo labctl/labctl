@@ -41,7 +41,8 @@ repos:
           go-static-check
           # install https://staticcheck.io/docs/
           # $ go install honnef.co/go/tools/cmd/staticcheck@latest
-      # - id:
-      #     golangci-lint
-      #     # requires github.com/golangci/golangci-lint
-      #   args: [--config=.github/linters/.golangci.yml] # optional
+      - id:
+          golangci-lint
+          # requires github.com/golangci/golangci-lint
+          # curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
+        #args: [--config=.github/linters/.golangci.yml] # optional

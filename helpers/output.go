@@ -2,10 +2,17 @@ package helpers
 
 import (
 	"github.com/gorilla/websocket"
+	"github.com/labctl/labctl/utils/tx"
+
 	log "github.com/sirupsen/logrus"
 )
 
+type OutputAsLog interface{}
+
+type OutputAsJson interface{}
+
 type ResultOutput interface {
+	Obj([]*tx.Response)
 	Info(string, string)
 	Error(string, string)
 }
@@ -21,29 +28,54 @@ func (l *LogOutput) Error(node string, msg string) {
 	log.Errorf("%s: %s", node, msg)
 }
 
+func (l *LogOutput) Obj(obj []*tx.Response) {
+	for _, r := range obj {
+		switch r.Level {
+		case -1:
+			r.Log(log.DebugLevel)
+		case 0:
+			r.Log(log.InfoLevel)
+		case 1:
+			r.Log(log.WarnLevel)
+		default:
+			r.Log(log.ErrorLevel)
+		}
+	}
+}
+
 // Implements ResultOutput
 type WebSocketOutput struct {
 	Conn *websocket.Conn
 }
 
 func (ws *WebSocketOutput) Info(node string, msg string) {
-	err := ws.Conn.WriteJSON(WebSocketData{
-		Code: WsConfigOk,
-		Node: node,
-		Msg:  msg,
-	})
-	if err != nil {
-		log.Errorf(err.Error())
+	wsmsg := &WsMessage{
+		Code: WscConfig,
+		Config: &WsConfig{
+			Node:    node,
+			Sresult: msg,
+		},
 	}
+	WsWriteJSON(ws.Conn, wsmsg)
 }
 
 func (ws *WebSocketOutput) Error(node string, msg string) {
-	err := ws.Conn.WriteJSON(WebSocketData{
-		Code: WsConfigErr,
-		Node: node,
-		Msg:  msg,
-	})
-	if err != nil {
-		log.Errorf(err.Error())
+	wsmsg := &WsMessage{
+		Code: WscConfig,
+		Config: &WsConfig{
+			Node:    node,
+			Sresult: msg,
+		},
 	}
+	WsWriteJSON(ws.Conn, wsmsg)
+}
+
+func (ws *WebSocketOutput) Obj(obj []*tx.Response) {
+	wsmsg := &WsMessage{
+		Code: WscConfig,
+		Config: &WsConfig{
+			Result: obj,
+		},
+	}
+	WsWriteJSON(ws.Conn, wsmsg)
 }

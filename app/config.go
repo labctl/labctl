@@ -13,7 +13,7 @@ import (
 
 // Render configuration and perform the action
 func ConfigRun(actionStr string, ctx *helpers.Context) error {
-	action, err := tx.ParseActionString(actionStr)
+	action, err := tx.StringToAction(actionStr)
 	if err != nil {
 		return err
 	}
@@ -50,19 +50,26 @@ func ConfigRun(actionStr string, ctx *helpers.Context) error {
 			return fmt.Errorf("invalid node in filter: %s", node)
 		}
 
-		_, err = ConfigSend(cs, action)
+		resp, err := ConfigSend(cs, action)
 		if err != nil {
 			ctx.Output.Error(cs.TargetNode.ShortName, err.Error())
 		}
+		ctx.Output.Info("a", "zz")
+
+		LogResults(resp, ctx)
 
 	}
 
 	return nil
 }
 
+// Display all results
+func LogResults(results []*tx.Response, ctx *helpers.Context) {
+}
+
 const vkTransport = "transport"
 
-// Send configuration to the action
+// Send commands or commit/compare configuration
 func ConfigSend(c *config.NodeConfig, action tx.Action) ([]*tx.Response, error) {
 	// Get the transport
 	transport, ok := c.TargetNode.Config.Vars[vkTransport]

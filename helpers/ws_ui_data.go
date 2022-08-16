@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
@@ -18,14 +19,14 @@ type layouts struct {
 	Nodes layoutsNodes `json:"nodes"`
 }
 
-type UiData struct {
+type WsUiData struct {
 	Options   map[string]interface{} `json:"options"`   // A generic options dictionary for persistent UI options
 	Layouts   layouts                `json:"layouts"`   // layouts is a property of v-network-graph
 	Templates map[string]string      `json:"templates"` // Templates used by the UI etc
 }
 
-func NewUiData() *UiData {
-	return &UiData{
+func NewWsUiData() *WsUiData {
+	return &WsUiData{
 		Layouts: layouts{
 			Nodes: make(layoutsNodes, 0),
 		},
@@ -34,7 +35,7 @@ func NewUiData() *UiData {
 	}
 }
 
-func (u *UiData) Print() {
+func (u *WsUiData) Print() {
 	log.Printf("%v", u)
 	// for k, v := range u.Layouts.Nodes {
 	// 	log.Infof("%s x:%v y:%v", k, v.X, v.Y)
@@ -55,7 +56,7 @@ func labFileName(p string) (string, fs.FileMode) {
 	return p + ".labctl" + ext, fm
 }
 
-func (u *UiData) WriteFile(ctx *Context) {
+func (u *WsUiData) WriteFile(ctx *Context) {
 	labfn, fm := labFileName(ctx.TopoFile)
 	log.Infof("Saving as %s", labfn)
 
@@ -70,7 +71,7 @@ func (u *UiData) WriteFile(ctx *Context) {
 	}
 }
 
-func (u *UiData) ReadFile(ctx *Context) error {
+func (u *WsUiData) ReadFile(ctx *Context) error {
 	labfn, _ := labFileName(ctx.TopoFile)
 	data, err := ioutil.ReadFile(labfn)
 	if err != nil {
@@ -81,4 +82,28 @@ func (u *UiData) ReadFile(ctx *Context) error {
 		return err
 	}
 	return nil
+}
+
+func WsWriteJSON(conn *websocket.Conn, wsmsg *WsMessage) {
+	err := conn.WriteJSON(wsmsg)
+	if err != nil {
+		log.Errorf("could not write to the websocket: %s", wsmsg.String())
+		return
+	}
+	if DebugCount > 0 {
+		log.Debugf("Ws Tx: %s", wsmsg.String())
+	}
+}
+
+func WsSendUiUpdate(conn *websocket.Conn, ctx *Context) {
+	wsmsg := &WsMessage{
+		Code:   WscUiData,
+		UiData: NewWsUiData(),
+	}
+	err := wsmsg.UiData.ReadFile(ctx)
+	if err != nil {
+		WsErrorf(conn, "could not read .labctl.yml")
+		return
+	}
+	WsWriteJSON(conn, wsmsg)
 }

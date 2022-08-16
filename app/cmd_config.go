@@ -48,7 +48,7 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 			)
 		}
 	}
-	ctx.Output.Info("TST", "aa")
+	ctx.Output.Info("CONFIG", "Start")
 
 	ctx.NodeFilter = r.Filter
 

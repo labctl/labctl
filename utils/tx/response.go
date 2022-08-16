@@ -9,7 +9,10 @@ import (
 )
 
 // The SSH reply, executed command and the prompt
-type Response struct{ Node, Source, Prompt, Command, Response string }
+type Response struct {
+	Node, Source, Prompt, Command, Response string
+	Level                                   int
+}
 
 // The Slog will include the entire Response
 //   Each field will be prefixed by a character.

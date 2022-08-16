@@ -7,7 +7,9 @@ import (
 
 	"github.com/scrapli/scrapligo/driver/opoptions"
 	"github.com/scrapli/scrapligo/driver/options"
+	"github.com/scrapli/scrapligo/logging"
 	"github.com/scrapli/scrapligo/platform"
+	"github.com/scrapli/scrapligo/response"
 	"github.com/scrapli/scrapligo/util"
 	"github.com/srl-labs/containerlab/clab/config"
 	"github.com/srl-labs/containerlab/nodes"
@@ -77,9 +79,6 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 		return nil, nil
 	}
 
-	var err error
-	var result []*Response
-
 	// Usernames & passwords
 	ssh_user, ssh_pass := "admin", "admin"
 	if v, ok := nodes.GetDefaultCredentialsForKind(st.TargetNode.Kind); ok == nil {
@@ -106,14 +105,26 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 	}
 
 	opt := []util.Option{
-		options.WithAuthNoStrictKey(),
+		// options.WithAuthNoStrictKey(),
 		options.WithAuthUsername(ssh_user),
 		options.WithAuthPassword(ssh_pass),
 		options.WithPort(ssh_port),
+		options.WithSSHConfigFileSystem(),
+		options.WithSSHKnownHostsFileSystem(),
+		// allows adding additional algorithms
+		// Host clab-*
+		// .  HostkeyAlgorithms +ssh-rsa
+		// .  PubkeyAcceptedAlgorithms +ssh-rsa
 	}
 
 	if DebugCount > 3 {
-		opt = append(opt, options.WithDefaultLogger())
+		li, err := logging.NewInstance(
+			logging.WithLevel(logging.Debug), logging.WithLogger(log.Debug),
+		)
+		if err != nil {
+			return nil, err
+		}
+		opt = append(opt, options.WithLogger(li))
 	}
 
 	p, err := platform.NewPlatform(ssh_platform, ssh_host, opt...)
@@ -123,53 +134,62 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 
 	d, err := p.GetNetworkDriver()
 	if err != nil {
-		log.Errorf("failed to fetch network driver from the platform for %s; stror: %s", st.TargetNode.Kind, err)
+		log.Errorf("failed to fetch network driver from the platform for %s/%s; error: %s", st.TargetNode.Kind, ssh_platform, err)
 	}
 
 	err = d.Open()
 	if err != nil {
-		return nil, fmt.Errorf("failed to open driver for %s; error: %+v", st.TargetNode.Kind, err)
+		return nil, fmt.Errorf("failed to open %s; error: %s (Can you ssh to the node?)", ssh_host, err)
 	}
 	defer d.Close()
 
-	for _, cline := range st.Config {
+	var result []*Response
 
-		if action == ASend {
-			return nil, fmt.Errorf("send not implemented")
-		}
-
-		count, istart := len(cline.Commands), len(result)
+	for _, lines := range st.Config {
+		count, istart := len(lines.Commands), len(result)
 
 		// Transaction commands
 		var actionCmds []string
-		if r, ok := KindMap[st.TargetNode.Kind]; ok {
+		if km, ok := KindMap[st.TargetNode.Kind]; ok {
 			if action == ACompare {
-				actionCmds = r.compare
+				actionCmds = km.compare
 			} else if action == ACommit {
-				actionCmds = r.commit
+				actionCmds = km.commit
 			}
 		}
-		cline.Commands = append(cline.Commands, actionCmds...)
+		lines.Commands = append(lines.Commands, actionCmds...)
 
-		res, err := d.SendConfigs(cline.Commands, opoptions.WithNoStripPrompt())
+		// Scarpligo's response
+		var mres *response.MultiResponse
+
+		default_level := 1
+		if action == ASend {
+			mres, err = d.SendCommands(lines.Commands, opoptions.WithNoStripPrompt())
+		} else {
+			mres, err = d.SendConfigs(lines.Commands, opoptions.WithNoStripPrompt())
+			default_level = 2
+		}
 		if err != nil {
-			return nil, fmt.Errorf("failed to send configs; error: %+v", err)
+			return nil, fmt.Errorf("failed to send configs/commands; error: %+v", err)
 		}
 
-		for _, res := range res.Responses {
-			response := d.Channel.PromptPattern.ReplaceAllString(res.Result, "")
-			if len(response) > 0 {
+		// convert
+		for _, res := range mres.Responses {
+			resNoPrompt := d.Channel.PromptPattern.ReplaceAllString(res.Result, "")
+			if len(resNoPrompt) > 0 {
 				res := &Response{
 					Node:     st.TargetNode.LongName,
-					Source:   cline.Source,
-					Prompt:   res.Result[len(response):],
+					Source:   lines.Source,
+					Prompt:   res.Result[len(resNoPrompt):],
 					Command:  res.Input,
-					Response: response,
+					Response: resNoPrompt,
+					Level:    default_level,
 				}
 
-				// check if these are action commands
+				// Mark action commands
 				for _, c := range actionCmds {
 					if res.Command == c {
+						res.Level = 0 // Debug
 						res.Source += " " + strings.ToUpper(action.String())
 					}
 				}
@@ -181,28 +201,46 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 		changes := len(result) - istart
 
 		if action == ACommit {
-			msg := fmt.Sprintf("%s committed %d lines", st.TargetNode.LongName, count)
-			if changes > 0 {
-				msg += fmt.Sprintf("%d failed commands", changes)
-				log.Warnln(msg)
-			} else {
-				log.Infoln(msg)
+			r := &Response{
+				Node:     st.TargetNode.LongName,
+				Source:   "send",
+				Response: fmt.Sprintf("committed %d lines", count),
+				Level:    1,
 			}
+			if changes > 0 {
+				r.Response += fmt.Sprintf(", %d failed commands", changes)
+				r.Level = 1
+			}
+			result = append(result, r)
 		}
 		if action == ACompare {
 			if changes == 0 {
-				log.Infof("%s no changes", st.TargetNode.LongName)
+				r := &Response{
+					Node:     st.TargetNode.LongName,
+					Source:   "send",
+					Response: "No changes to the configuration",
+					Level:    1,
+				}
+				result = append(result, r)
 			}
 		}
-
 	}
+	LogResults(result)
+	return result, nil
+}
 
-	for _, r := range result {
-		if strings.Contains(r.Source, strings.ToUpper(action.String())) {
+// Display all results
+func LogResults(results []*Response) {
+	for _, r := range results {
+		switch r.Level {
+		case -1:
+			r.Log(log.DebugLevel)
+		case 0:
 			r.Log(log.InfoLevel)
-		} else {
+		case 1:
+			r.Log(log.WarnLevel)
+		default:
 			r.Log(log.ErrorLevel)
 		}
 	}
-	return result, nil
 }

@@ -1,19 +1,16 @@
 package helpers
 
 import (
-	"context"
 	"fmt"
 	"strings"
-	"text/template"
 
-	"github.com/hairyhenderson/gomplate/v3"
-	gomData "github.com/hairyhenderson/gomplate/v3/data"
-	jT "github.com/kellerza/template"
+	"github.com/labctl/labctl/utils"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
-type WebSocketTemplate struct {
+// Used by the frontend to request a template to be rendered
+type WsTemplate struct {
 	Id         string                 `json:"id,omitempty"`
 	Name       string                 `json:"name,omitempty"`
 	Template   string                 `json:"template,omitempty"`
@@ -22,36 +19,15 @@ type WebSocketTemplate struct {
 	ResultYaml map[string]interface{} `json:"resulty,omitempty"`
 }
 
-func NewTemplate() *template.Template {
-	// gomplate overrides the built-in *slice* function. You can still use *coll.Slice*
-	gfuncs := gomplate.CreateFuncs(context.Background(), new(gomData.Data))
-	delete(gfuncs, "slice")
-	return template.New("").Funcs(gfuncs).Funcs(jT.Funcs)
-}
-
-func ParseTemplates(temps map[string]string) (*template.Template, error) {
-	var err error
-	res := NewTemplate()
-
-	// Parse all templates
-	for k, t := range temps {
-		_, err = res.New(k).Parse(t)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
 // Render the template
-func (t *WebSocketTemplate) Render(ctx *Context) error {
+func (t *WsTemplate) Render(ctx *Context) error {
 	var buf strings.Builder
 
 	if t.Name == "" {
 		return fmt.Errorf("template should have a name")
 	}
 	if ctx.Template == nil {
-		ctx.Template = NewTemplate()
+		ctx.Template = utils.NewTemplate()
 	}
 	tmp := ctx.Template.Lookup(t.Name)
 	if tmp == nil {
@@ -83,7 +59,7 @@ func (t *WebSocketTemplate) Render(ctx *Context) error {
 	return nil
 }
 
-func (t *WebSocketTemplate) ClearInput() {
+func (t *WsTemplate) ClearInput() {
 	t.Template = ""
 	t.Vars = nil
 }

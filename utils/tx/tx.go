@@ -24,7 +24,7 @@ func (c Action) String() string {
 }
 
 // Parse a string and return an action
-func ParseActionString(str string) (Action, error) {
+func StringToAction(str string) (Action, error) {
 	for i, a := range actionStrs {
 		if i != int(AUnknown) && a == str {
 			return Action(i), nil

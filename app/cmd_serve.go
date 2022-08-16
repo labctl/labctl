@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/labctl/labctl/helpers"
 	"github.com/labctl/labctl/helpers/frontend"
+	"github.com/labctl/labctl/utils"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 )
@@ -60,58 +61,46 @@ func websock(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.Close()
 
-	wsdata := helpers.NewWebSocketData()
-	err = wsdata.Data.ReadFile(Ctx)
-	if err != nil {
-		log.Debugf("Could not read lab file %s", err.Error())
-	} else {
-		wsdata.Code = 100
-		err = c.WriteJSON(wsdata)
-		if err != nil {
-			log.Errorf("could not write to the websocket: %s", err)
-		}
-	}
+	// immediately send a UI update
+	helpers.WsSendUiUpdate(c, Ctx)
+
+	var wsmsg helpers.WsMessage
 
 	for {
-		mt, message, err := c.ReadMessage()
+		_, message, err := c.ReadMessage()
 		if err != nil {
 			log.Println("read:", err)
 			break
 		}
-		err = wsdata.Unmarshal(message)
+		err = wsmsg.Unmarshal(message)
 		if err != nil {
 			continue
 		}
-		switch wsdata.Code {
-		case 1: // hearbeat
-		case 2: // echo
-			err = c.WriteMessage(mt, message)
-			if err != nil {
-				log.Println("write:", err)
-			}
-		case 100: // save settings
-			wsdata.Data.WriteFile(Ctx)
-			Ctx.Template, err = helpers.ParseTemplates(wsdata.Data.Templates)
+		switch wsmsg.Code {
+		case helpers.WscHeartbeat:
+		case helpers.WscUiData: // save UI settings
+			wsmsg.UiData.WriteFile(Ctx)
+			Ctx.Template, err = utils.ParseTemplates(wsmsg.UiData.Templates)
 			if err != nil {
 				log.Errorf("cannot parse tmeplate: %s", err.Error())
 			}
-		case 300: // render template
-			err := wsdata.Template.Render(Ctx)
+		case helpers.WscTemplate: // render template
+			err := wsmsg.Template.Render(Ctx)
 			if err != nil {
 				log.Errorf("%s", err)
 			} else {
 				// if successful, we can clear the template & vars
-				wsdata.Template.ClearInput()
+				wsmsg.Template.ClearInput()
 			}
-			err = c.WriteJSON(wsdata)
+			err = c.WriteJSON(wsmsg)
 			if err != nil {
 				log.Errorf("could not write to the websocket: %s", err)
 			}
 
-		case 400: // config command
-			err = ParseWebString(c, wsdata.Msg)
+		case helpers.WscConfig: // config command
+			err = ParseWebString(c, wsmsg.Config.Cmd)
 			if err != nil {
-				err = c.WriteMessage(400, []byte("ss"))
+				helpers.WsErrorf(c, err.Error())
 				if err != nil {
 					log.Errorf("%s", err)
 				}
@@ -119,7 +108,7 @@ func websock(w http.ResponseWriter, r *http.Request) {
 			}
 
 		default:
-			log.Infof("recv %v", wsdata)
+			log.Infof("recv %v", wsmsg)
 		}
 	}
 }

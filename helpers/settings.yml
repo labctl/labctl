@@ -1,15 +1,15 @@
 colorize:
   - regex: '\d+\.\d+\.\d+\.\d+(/\d+)?'
     color: magenta
-  - regex: "(?i)(true|valid|used)"
+  - regex: "(?i)\b(true|valid|used)\b"
     color: hiwhite,bold
   - regex: "(?i)(false|none)"
     color: hired
   - regex: shutdown
     color: yellow
-  - regex: '(?i)(error|\bdown)'
+  - regex: '(?i)\b(error|down)\b'
     color: red
-  - regex: '(?i)(enabled?|\bup\b)'
+  - regex: '(?i)(\benabled?|\bup\b)'
     color: green
-  - regex: "(?i)disabled?"
+  - regex: "(?i)\bdisabled?"
     color: yellow
