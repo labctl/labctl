@@ -7,6 +7,7 @@ import (
 	"github.com/google/shlex"
 	"github.com/gorilla/websocket"
 	"github.com/labctl/labctl/helpers"
+	"github.com/labctl/labctl/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/srl-labs/containerlab/clab/config"
 )
@@ -48,24 +49,46 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 			)
 		}
 	}
-	ctx.Output.Info("CONFIG", "Start")
-
 	ctx.NodeFilter = r.Filter
 
 	// Setup containerlab's config engine
 	config.TemplateNames = r.TemplateList
 	config.TemplatePaths = ctx.TemplatePathsSlice()
 
+	configs, err := LoadAndPrep(&ctx.NodeFilter, ctx.TopoFile, ctx.Command != "vars")
+	if err != nil {
+		return err
+	}
+
 	switch ctx.Command {
 	case "send", "commit", "compare":
-		return ConfigRun(ctx.Command, ctx)
-
-	case "template", "vars":
-		return ConfigView(ctx.Command, ctx)
-
+		return ConfigTx(configs, ctx)
+	case "vars":
+		for nn, cfg := range configs {
+			if !utils.Contains(ctx.NodeFilter, nn) {
+				continue
+			}
+			if ctx.Output.PreferStdout() {
+				cfg.Print(true, false)
+			} else {
+				ctx.Output.LogResponses(nil, cfg)
+			}
+		}
+	case "template":
+		for nn, cfg := range configs {
+			if !utils.Contains(ctx.NodeFilter, nn) {
+				continue
+			}
+			if ctx.Output.PreferStdout() {
+				cfg.Print(false, true)
+			} else {
+				ctx.Output.LogResponses(nil, cfg)
+			}
+		}
 	default:
 		return fmt.Errorf("unknown command %s", ctx.Command)
 	}
+	return nil
 }
 
 func ParseWebString(wsconn *websocket.Conn, cmd string) error {

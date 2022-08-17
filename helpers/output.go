@@ -3,6 +3,7 @@ package helpers
 import (
 	"github.com/gorilla/websocket"
 	"github.com/labctl/labctl/utils/tx"
+	"github.com/srl-labs/containerlab/clab/config"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -12,9 +13,10 @@ type OutputAsLog interface{}
 type OutputAsJson interface{}
 
 type ResultOutput interface {
-	Obj([]*tx.Response)
+	LogResponses([]*tx.Response, *config.NodeConfig)
 	Info(string, string)
 	Error(string, string)
+	PreferStdout() bool
 }
 
 // The standard output to the log. Implements ResultOutput
@@ -28,19 +30,14 @@ func (l *LogOutput) Error(node string, msg string) {
 	log.Errorf("%s: %s", node, msg)
 }
 
-func (l *LogOutput) Obj(obj []*tx.Response) {
+func (l *LogOutput) LogResponses(obj []*tx.Response, _ *config.NodeConfig) {
 	for _, r := range obj {
-		switch r.Level {
-		case -1:
-			r.Log(log.DebugLevel)
-		case 0:
-			r.Log(log.InfoLevel)
-		case 1:
-			r.Log(log.WarnLevel)
-		default:
-			r.Log(log.ErrorLevel)
-		}
+		r.Log(r.Level)
 	}
+}
+
+func (l *LogOutput) PreferStdout() bool {
+	return true
 }
 
 // Implements ResultOutput
@@ -52,8 +49,7 @@ func (ws *WebSocketOutput) Info(node string, msg string) {
 	wsmsg := &WsMessage{
 		Code: WscConfig,
 		Config: &WsConfig{
-			Node:    node,
-			Sresult: msg,
+			Results: []*tx.Response{{Node: node, Response: msg, Level: log.DebugLevel}},
 		},
 	}
 	WsWriteJSON(ws.Conn, wsmsg)
@@ -63,19 +59,23 @@ func (ws *WebSocketOutput) Error(node string, msg string) {
 	wsmsg := &WsMessage{
 		Code: WscConfig,
 		Config: &WsConfig{
-			Node:    node,
-			Sresult: msg,
+			Results: []*tx.Response{{Node: node, Response: msg, Level: log.ErrorLevel}},
 		},
 	}
 	WsWriteJSON(ws.Conn, wsmsg)
 }
 
-func (ws *WebSocketOutput) Obj(obj []*tx.Response) {
+func (ws *WebSocketOutput) LogResponses(obj []*tx.Response, nc *config.NodeConfig) {
 	wsmsg := &WsMessage{
 		Code: WscConfig,
 		Config: &WsConfig{
-			Result: obj,
+			Results: obj,
+			Input:   nc,
 		},
 	}
 	WsWriteJSON(ws.Conn, wsmsg)
+}
+
+func (l *WebSocketOutput) PreferStdout() bool {
+	return false
 }

@@ -72,7 +72,7 @@ func websock(w http.ResponseWriter, r *http.Request) {
 			log.Println("read:", err)
 			break
 		}
-		err = wsmsg.Unmarshal(message)
+		err = wsmsg.UnmarshalJson(message)
 		if err != nil {
 			continue
 		}
@@ -82,8 +82,9 @@ func websock(w http.ResponseWriter, r *http.Request) {
 			wsmsg.UiData.WriteFile(Ctx)
 			Ctx.Template, err = utils.ParseTemplates(wsmsg.UiData.Templates)
 			if err != nil {
-				log.Errorf("cannot parse tmeplate: %s", err.Error())
+				log.Errorf("cannot parse template: %s", err.Error())
 			}
+
 		case helpers.WscTemplate: // render template
 			err := wsmsg.Template.Render(Ctx)
 			if err != nil {
@@ -101,10 +102,6 @@ func websock(w http.ResponseWriter, r *http.Request) {
 			err = ParseWebString(c, wsmsg.Config.Cmd)
 			if err != nil {
 				helpers.WsErrorf(c, err.Error())
-				if err != nil {
-					log.Errorf("%s", err)
-				}
-
 			}
 
 		default:

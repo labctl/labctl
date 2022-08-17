@@ -5,6 +5,7 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/labctl/labctl/helpers"
+	"github.com/labctl/labctl/utils/tx"
 	"github.com/posener/complete"
 	"github.com/willabides/kongplete"
 
@@ -56,6 +57,7 @@ func Main() {
 	if cli.Debug > 0 {
 		log.SetLevel(log.DebugLevel)
 	}
+	tx.DebugCount = cli.Debug
 
 	Ctx = &helpers.Context{
 		Command:    kctx.Command(),

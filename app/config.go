@@ -5,72 +5,41 @@ import (
 	"strings"
 
 	"github.com/labctl/labctl/helpers"
+	"github.com/labctl/labctl/utils"
 	"github.com/labctl/labctl/utils/tx"
 	"github.com/srl-labs/containerlab/clab/config"
 
 	log "github.com/sirupsen/logrus"
 )
 
-// Render configuration and perform the action
-func ConfigRun(actionStr string, ctx *helpers.Context) error {
-	action, err := tx.StringToAction(actionStr)
-	if err != nil {
-		return err
-	}
-
+// Send commands or commit/compare configuration to a single node
+func ConfigTx(configs map[string]*config.NodeConfig, ctx *helpers.Context) error {
 	tx.DebugCount = ctx.DebugCount
-	config.DebugCount = ctx.DebugCount
 
-	allConfig, err := LoadAndPrep(&ctx.NodeFilter, ctx.TopoFile)
+	act, err := tx.StringToAction(ctx.Command)
 	if err != nil {
 		return err
 	}
-
-	err = config.RenderAll(allConfig)
-	if err != nil {
-		return err
-	}
-
-	err = validateRender(allConfig)
-	if err != nil {
-		return err
-	}
-
-	if len(ctx.NodeFilter) == 0 {
-		// Ad al the nodes to the filter
-		for n := range allConfig {
-			ctx.NodeFilter = append(ctx.NodeFilter, n)
-		}
-	}
-
-	for _, node := range ctx.NodeFilter {
-
-		cs, ok := allConfig[node]
-		if !ok {
-			return fmt.Errorf("invalid node in filter: %s", node)
+	for nn, cfg := range configs {
+		if !utils.Contains(ctx.NodeFilter, nn) {
+			continue
 		}
 
-		resp, err := ConfigSend(cs, action)
+		resp, err := ConfigTx1(cfg, act)
 		if err != nil {
-			ctx.Output.Error(cs.TargetNode.ShortName, err.Error())
+			ctx.Output.Error(cfg.TargetNode.ShortName, err.Error())
 		}
-		ctx.Output.Info("a", "zz")
 
-		LogResults(resp, ctx)
-
+		ctx.Output.LogResponses(resp, cfg)
 	}
 
 	return nil
 }
 
-// Display all results
-func LogResults(results []*tx.Response, ctx *helpers.Context) {
-}
-
 const vkTransport = "transport"
 
-// Send commands or commit/compare configuration
-func ConfigSend(c *config.NodeConfig, action tx.Action) ([]*tx.Response, error) {
+// Send commands or commit/compare configuration to a single node
+func ConfigTx1(c *config.NodeConfig, action tx.Action) ([]*tx.Response, error) {
 	// Get the transport
 	transport, ok := c.TargetNode.Config.Vars[vkTransport]
 	if !ok {
@@ -93,29 +62,8 @@ func ConfigSend(c *config.NodeConfig, action tx.Action) ([]*tx.Response, error) 
 	return nil, fmt.Errorf("transport '%s' not implemented", transport)
 }
 
-func ConfigView(actionStr string, ctx *helpers.Context) error {
-	allConfig, err := LoadAndPrep(&ctx.NodeFilter, ctx.TopoFile)
-	if err != nil {
-		return err
-	}
-	if ctx.Command == "vars" {
-		for _, n := range ctx.NodeFilter {
-			allConfig[n].Print(true, false)
-		}
-		return nil
-	}
-	err = config.RenderAll(allConfig)
-	if err != nil {
-		return err
-	}
-	for _, n := range ctx.NodeFilter {
-		allConfig[n].Print(false, true)
-	}
-	return nil
-}
-
 // Load the topo files and prepare the variables
-func LoadAndPrep(nodeFilter *[]string, topoFile string) (map[string]*config.NodeConfig, error) {
+func LoadAndPrep(nodeFilter *[]string, topoFile string, render bool) (map[string]*config.NodeConfig, error) {
 	var topo helpers.Topo
 	err := topo.Load(topoFile)
 	if err != nil {
@@ -127,7 +75,25 @@ func LoadAndPrep(nodeFilter *[]string, topoFile string) (map[string]*config.Node
 		return nil, err
 	}
 
-	return config.PrepareVars(topo.Nodes, topo.Links), nil
+	configs := config.PrepareVars(topo.Nodes, topo.Links)
+
+	if render {
+		config.DebugCount = Ctx.DebugCount
+
+		// Call containerlab's render
+		err = config.RenderAll(configs)
+		if err != nil {
+			return nil, err
+		}
+
+		// Validate render
+		err = validateRender(configs)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return configs, nil
 }
 
 // Validate the rendered template

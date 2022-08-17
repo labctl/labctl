@@ -26,7 +26,7 @@ type WsMessage struct {
 	Config   *WsConfig   `json:"config,omitempty"`
 }
 
-func (w *WsMessage) Unmarshal(data []byte) error {
+func (w *WsMessage) UnmarshalJson(data []byte) error {
 	// Clear the websocket data, ready to populate the newly received string
 	w.Code = ""
 	// for k := range w.UiData.Layouts.Nodes {
@@ -38,6 +38,27 @@ func (w *WsMessage) Unmarshal(data []byte) error {
 		log.Errorf("%s: %v", err.Error(), data)
 		return err
 	}
+
+	// Check that we have the correct key and no extra keys
+	checks := []struct {
+		code WsMsgCode
+		ok   bool
+	}{
+		{WscConfig, w.Config != nil},
+		{WscTemplate, w.Template != nil},
+		{WscUiData, w.UiData != nil},
+		{WscError, w.Error != ""},
+	}
+	for _, c := range checks {
+		if c.code == w.Code && !c.ok {
+			return fmt.Errorf("expected '%s' in %s", c.code, string(data))
+		}
+		if c.code != w.Code && c.ok {
+			return fmt.Errorf("did not expect '%s' in %s", c.code, string(data))
+		}
+
+	}
+
 	return nil
 }
 

@@ -10,8 +10,12 @@ import (
 
 // The SSH reply, executed command and the prompt
 type Response struct {
-	Node, Source, Prompt, Command, Response string
-	Level                                   int
+	Node     string    `json:"node"`
+	Source   string    `json:"source"`
+	Prompt   string    `json:"prompt"`
+	Command  string    `json:"command"`
+	Response string    `json:"response"`
+	Level    log.Level `json:"level"`
 }
 
 // The Slog will include the entire Response

@@ -105,7 +105,7 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 	}
 
 	opt := []util.Option{
-		// options.WithAuthNoStrictKey(),
+		options.WithAuthNoStrictKey(),
 		options.WithAuthUsername(ssh_user),
 		options.WithAuthPassword(ssh_pass),
 		options.WithPort(ssh_port),
@@ -117,15 +117,7 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 		// .  PubkeyAcceptedAlgorithms +ssh-rsa
 	}
 
-	if DebugCount > 3 {
-		li, err := logging.NewInstance(
-			logging.WithLevel(logging.Debug), logging.WithLogger(log.Debug),
-		)
-		if err != nil {
-			return nil, err
-		}
-		opt = append(opt, options.WithLogger(li))
-	}
+	opt = append(opt, options.WithLogger(scrapliLoggerInstance()))
 
 	p, err := platform.NewPlatform(ssh_platform, ssh_host, opt...)
 	if err != nil {
@@ -162,12 +154,12 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 		// Scarpligo's response
 		var mres *response.MultiResponse
 
-		default_level := 1
+		default_level := log.DebugLevel
 		if action == ASend {
 			mres, err = d.SendCommands(lines.Commands, opoptions.WithNoStripPrompt())
 		} else {
 			mres, err = d.SendConfigs(lines.Commands, opoptions.WithNoStripPrompt())
-			default_level = 2
+			default_level = log.InfoLevel
 		}
 		if err != nil {
 			return nil, fmt.Errorf("failed to send configs/commands; error: %+v", err)
@@ -178,7 +170,7 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 			resNoPrompt := d.Channel.PromptPattern.ReplaceAllString(res.Result, "")
 			if len(resNoPrompt) > 0 {
 				res := &Response{
-					Node:     st.TargetNode.LongName,
+					Node:     st.TargetNode.ShortName,
 					Source:   lines.Source,
 					Prompt:   res.Result[len(resNoPrompt):],
 					Command:  res.Input,
@@ -202,7 +194,7 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 
 		if action == ACommit {
 			r := &Response{
-				Node:     st.TargetNode.LongName,
+				Node:     st.TargetNode.ShortName,
 				Source:   "send",
 				Response: fmt.Sprintf("committed %d lines", count),
 				Level:    1,
@@ -216,7 +208,7 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 		if action == ACompare {
 			if changes == 0 {
 				r := &Response{
-					Node:     st.TargetNode.LongName,
+					Node:     st.TargetNode.ShortName,
 					Source:   "send",
 					Response: "No changes to the configuration",
 					Level:    1,
@@ -225,22 +217,28 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 			}
 		}
 	}
-	LogResults(result)
+	if log.DebugLevel > 1 {
+		log.Debugf("send done, closing...")
+	}
 	return result, nil
 }
 
-// Display all results
-func LogResults(results []*Response) {
-	for _, r := range results {
-		switch r.Level {
-		case -1:
-			r.Log(log.DebugLevel)
-		case 0:
-			r.Log(log.InfoLevel)
-		case 1:
-			r.Log(log.WarnLevel)
-		default:
-			r.Log(log.ErrorLevel)
-		}
+func scrapliLoggerInstance() *logging.Instance {
+	lvl := logging.Critical
+	fun := log.Error
+	if DebugCount > 0 {
+		lvl = logging.Info
+		fun = log.Info
+	} else if DebugCount > 3 {
+		lvl = logging.Debug
+		fun = log.Debug
 	}
+
+	li, err := logging.NewInstance(
+		logging.WithLevel(lvl), logging.WithLogger(fun),
+	)
+	if err != nil {
+		log.Error(err)
+	}
+	return li
 }

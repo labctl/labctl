@@ -68,3 +68,12 @@ func ArrayMapify(in interface{}) ([]map[string]interface{}, error) {
 	}
 	return res, nil
 }
+
+func Contains[T comparable](elems []T, v T) bool {
+	for _, s := range elems {
+		if v == s {
+			return true
+		}
+	}
+	return false
+}
