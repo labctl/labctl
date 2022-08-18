@@ -59,6 +59,7 @@ func (t *WsTemplate) Render(ctx *Context) error {
 	return nil
 }
 
+// Clear the template command's input (typically before replying)
 func (t *WsTemplate) ClearInput() {
 	t.Template = ""
 	t.Vars = nil

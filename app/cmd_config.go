@@ -91,10 +91,18 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 	return nil
 }
 
-func ParseWebString(wsconn *websocket.Conn, cmd string) error {
+func RunWebConfig(wsconn *websocket.Conn, cmd string) error {
+	// ensure we always send a done message
+	defer func() {
+		wsconn.WriteJSON(&helpers.WsMessage{
+			Code:   helpers.WscConfig,
+			Config: &helpers.WsConfig{Cmd: "done"},
+		})
+	}()
+
 	args, err := shlex.Split(cmd)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s\n\nwhile trying to split:\n\t%s", err, cmd)
 	}
 
 	// Parse using only the
@@ -102,7 +110,7 @@ func ParseWebString(wsconn *websocket.Conn, cmd string) error {
 	p := GetCmdLineParser(&cli)
 	kctx, err := p.Parse(args)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s\n\nwhile trying to parse:\n\t%s", err, cmd)
 	}
 
 	// Copy the global context, update the output & command

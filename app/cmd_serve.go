@@ -82,30 +82,29 @@ func websock(w http.ResponseWriter, r *http.Request) {
 			wsmsg.UiData.WriteFile(Ctx)
 			Ctx.Template, err = utils.ParseTemplates(wsmsg.UiData.Templates)
 			if err != nil {
-				log.Errorf("cannot parse template: %s", err.Error())
+				helpers.WsErrorf(c, "cannot parse template: %s", err)
 			}
 
 		case helpers.WscTemplate: // render template
 			err := wsmsg.Template.Render(Ctx)
 			if err != nil {
-				log.Errorf("%s", err)
-			} else {
-				// if successful, we can clear the template & vars
-				wsmsg.Template.ClearInput()
+				helpers.WsErrorf(c, err.Error())
+				continue
 			}
+			wsmsg.Template.ClearInput()
 			err = c.WriteJSON(wsmsg)
 			if err != nil {
 				log.Errorf("could not write to the websocket: %s", err)
 			}
 
-		case helpers.WscConfig: // config command
-			err = ParseWebString(c, wsmsg.Config.Cmd)
+		case helpers.WscConfig: // run the config command
+			err = RunWebConfig(c, wsmsg.Config.Cmd)
 			if err != nil {
 				helpers.WsErrorf(c, err.Error())
 			}
 
 		default:
-			log.Infof("recv %v", wsmsg)
+			log.Warnf("unhandled websocket message: %v", wsmsg)
 		}
 	}
 }
