@@ -13,6 +13,7 @@ type WsMsgCode string
 const (
 	WscHeartbeat WsMsgCode = "."
 	WscError     WsMsgCode = "error"
+	WscWarn      WsMsgCode = "warn"
 	WscTemplate  WsMsgCode = "template"
 	WscUiData    WsMsgCode = "uidata"
 	WscConfig    WsMsgCode = "config"
@@ -20,7 +21,7 @@ const (
 
 type WsMessage struct {
 	Code     WsMsgCode   `json:"code"`
-	Error    string      `json:"error,omitempty"`
+	Msg      string      `json:"msg,omitempty"`
 	UiData   *WsUiData   `json:"uidata,omitempty"`
 	Template *WsTemplate `json:"template,omitempty"`
 	Config   *WsConfig   `json:"config,omitempty"`
@@ -29,13 +30,13 @@ type WsMessage struct {
 func (w *WsMessage) UnmarshalJson(data []byte) error {
 	// Clear the websocket data, ready to populate the newly received string
 	w.Code = ""
-	// for k := range w.UiData.Layouts.Nodes {
-	// 	delete(w.UiData.Layouts.Nodes, k)
-	// }
+	w.Msg = ""
+	w.UiData = nil
+	w.Template = nil
+	w.Config = nil
 
 	err := json.Unmarshal(data, &w)
 	if err != nil {
-		log.Errorf("%s: %v", err.Error(), data)
 		return err
 	}
 
@@ -47,7 +48,6 @@ func (w *WsMessage) UnmarshalJson(data []byte) error {
 		{WscConfig, w.Config != nil},
 		{WscTemplate, w.Template != nil},
 		{WscUiData, w.UiData != nil},
-		{WscError, w.Error != ""},
 	}
 	for _, c := range checks {
 		if c.code == w.Code && !c.ok {
@@ -73,10 +73,18 @@ func (w *WsMessage) String() string {
 }
 
 func WsErrorf(conn *websocket.Conn, msg string, args ...interface{}) {
+	WsLogf(conn, WscError, msg, args...)
+}
+
+func WsWarnf(conn *websocket.Conn, msg string, args ...interface{}) {
+	WsLogf(conn, WscWarn, msg, args...)
+}
+
+func WsLogf(conn *websocket.Conn, code WsMsgCode, msg string, args ...interface{}) {
 	m := fmt.Sprintf(msg, args...)
 	wsmsg := &WsMessage{
-		Code:  WscError,
-		Error: m,
+		Code: code,
+		Msg:  m,
 	}
 	WsWriteJSON(conn, wsmsg)
 }

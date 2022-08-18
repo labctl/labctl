@@ -74,6 +74,7 @@ func websock(w http.ResponseWriter, r *http.Request) {
 		}
 		err = wsmsg.UnmarshalJson(message)
 		if err != nil {
+			log.Warnf("Ws Rx: %s: %v", err.Error(), message)
 			continue
 		}
 		switch wsmsg.Code {
@@ -88,7 +89,7 @@ func websock(w http.ResponseWriter, r *http.Request) {
 		case helpers.WscTemplate: // render template
 			err := wsmsg.Template.Render(Ctx)
 			if err != nil {
-				helpers.WsErrorf(c, err.Error())
+				helpers.WsWarnf(c, err.Error())
 				continue
 			}
 			wsmsg.Template.ClearInput()
