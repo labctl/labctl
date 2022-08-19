@@ -22,8 +22,8 @@ type Settings struct {
 //go:embed settings.yml
 var defaultSettings embed.FS
 
-func NewSettings(defaults ...bool) Settings {
-	s := Settings{}
+func NewSettings(defaults ...bool) *Settings {
+	s := &Settings{}
 	if len(defaults) > 0 {
 		in, err := defaultSettings.ReadFile("settings.yml")
 		if err != nil {

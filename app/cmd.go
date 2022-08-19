@@ -52,6 +52,9 @@ func Main() {
 	if err = s.AddSettings("~/.labctl.yml", true); err != nil {
 		kctx.FatalIfErrorf(err)
 	}
+	if err = s.InitColors(); err != nil {
+		kctx.FatalIfErrorf(err)
+	}
 
 	log.SetOutput(os.Stdout)
 	if cli.Debug > 0 {

@@ -12,9 +12,6 @@ type CmdColor struct {
 }
 
 func (r *CmdColor) Run(ctx *helpers.Context) error {
-	if err := ctx.Settings.InitColors(); err != nil {
-		return err
-	}
 	if ctx.DebugCount > 0 {
 		for _, r := range ctx.Settings.Colors {
 			fmt.Printf("- %s %s, %s\n", r.Replace, r.ColorStr, r.Regexp.String())

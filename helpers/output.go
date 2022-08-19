@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"github.com/gorilla/websocket"
+	"github.com/labctl/labctl/utils/colorize"
 	"github.com/labctl/labctl/utils/tx"
 	"github.com/srl-labs/containerlab/clab/config"
 
@@ -78,4 +79,14 @@ func (ws *WebSocketOutput) LogResponses(obj []*tx.Response, nc *config.NodeConfi
 
 func (l *WebSocketOutput) PreferStdout() bool {
 	return false
+}
+
+// Color the templates
+func ColorResults(responses []*tx.Response, regexes []*colorize.Colorize) {
+	for i, r := range responses {
+		// Replace for every regex
+		for _, rex := range regexes {
+			responses[i].Response = rex.Regexp.ReplaceAllString(r.Response, string(rex.Replace))
+		}
+	}
 }

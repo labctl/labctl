@@ -10,7 +10,7 @@ type Context struct {
 	// the Kong Command()
 	Command    string
 	DebugCount int
-	Settings   Settings
+	Settings   *Settings
 
 	// used by config, serve
 	TopoFile string

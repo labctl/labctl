@@ -30,6 +30,10 @@ func ConfigTx(configs map[string]*config.NodeConfig, ctx *helpers.Context) error
 			ctx.Output.Error(cfg.TargetNode.ShortName, err.Error())
 		}
 
+		if Ctx.Settings != nil && Ctx.Settings.Colors != nil {
+			helpers.ColorResults(resp, ctx.Settings.Colors)
+		}
+
 		ctx.Output.LogResponses(resp, cfg)
 	}
 
@@ -98,9 +102,9 @@ func LoadAndPrep(nodeFilter *[]string, topoFile string, render bool) (map[string
 
 // Validate the rendered template
 // Check for any occurrences of "<no value>" / "<nil>"
-func validateRender(allConfig map[string]*config.NodeConfig) error {
+func validateRender(configs map[string]*config.NodeConfig) error {
 	fail_count := 0
-	for node, c := range allConfig {
+	for node, c := range configs {
 		for idx, ic := range c.Data {
 			if strings.Contains(ic, "<no value>") {
 				log.Warnf("%s: template %s rendered with <no value>", node, c.Info[idx])
