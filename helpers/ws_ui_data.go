@@ -74,6 +74,10 @@ func (u *WsUiData) WriteFile(ctx *Context) {
 func (u *WsUiData) ReadFile(ctx *Context) error {
 	labfn, _ := labFileName(ctx.TopoFile)
 	data, err := ioutil.ReadFile(labfn)
+	if os.IsNotExist(err) {
+		log.Debugf("No labctl file yet: %s", err)
+		return nil
+	}
 	if err != nil {
 		return err
 	}

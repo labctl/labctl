@@ -48,7 +48,7 @@ func (s *Settings) AddSettings(path string, silent bool) error {
 }
 
 func (s *Settings) load(path string, silent bool) error {
-	p := utils.Path{Path: "~/set.yml"}
+	p := utils.Path{Path: path}
 	_ = p.ExpandUser()
 	setByte, err := os.ReadFile(p.Path)
 	if err != nil {

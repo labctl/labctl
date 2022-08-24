@@ -78,7 +78,6 @@ func LoadTemplates(ctx *Context) (Templates, error) {
 func InitTemplatePaths(paths []string) (*orderedmap.OrderedMap[string, string], error) {
 	res := orderedmap.New[string, string]()
 	for _, ps := range paths {
-		log.Infof(">> %s", ps)
 		p := utils.Path{Path: ps}
 		err := p.Resolve()
 		if err != nil {
@@ -96,7 +95,7 @@ func InitTemplatePaths(paths []string) (*orderedmap.OrderedMap[string, string], 
 			i++
 		}
 		res.Set(n, p.Path)
-		log.Infof("name: %s path: %s", n, p.Path)
+		log.Debugf("--template-path %s [%s]", p.Path, n)
 	}
 	return res, nil
 }

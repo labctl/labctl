@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -45,7 +46,17 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 
 	handler := cors.Default().Handler(&frontend.SlashFix{Mux: mux})
 
-	log.Infof("Serve on %s", r.Addr)
+	// Check and print the web URL
+	host, _, port := utils.Partition(r.Addr, ":")
+	if port == "" {
+		return fmt.Errorf("you need to specify a port")
+	}
+	url := "http://" + r.Addr
+	if host == "" {
+		url = fmt.Sprintf("http://localhost%s or http://%s%s", r.Addr, utils.GetOutboundIP(), r.Addr)
+	}
+	log.Infof("Access the web server on %s", url)
+
 	return http.ListenAndServe(r.Addr, handler)
 }
 
@@ -62,6 +73,8 @@ func websock(w http.ResponseWriter, r *http.Request) {
 	defer c.Close()
 
 	// immediately send a UI update
+	helpers.WsLogf(c, helpers.WscWarn, "websocket connected")
+
 	helpers.WsSendUiUpdate(c, Ctx)
 
 	var wsmsg helpers.WsMessage

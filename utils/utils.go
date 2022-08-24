@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"io/ioutil"
+	"net"
 	"reflect"
 	"strings"
 
@@ -76,4 +77,25 @@ func Contains[T comparable](elems []T, v T) bool {
 		}
 	}
 	return false
+}
+
+// Get preferred outbound ip of this machine
+func GetOutboundIP() net.IP {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+	return localAddr.IP
+}
+
+func Partition(s string, sep string) (string, string, string) {
+	parts := strings.SplitN(s, sep, 2)
+	if len(parts) == 1 {
+		return parts[0], "", ""
+	}
+	return parts[0], sep, parts[1]
 }

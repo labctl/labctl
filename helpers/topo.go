@@ -28,7 +28,7 @@ func (topo *Topo) Load(topoFile string) error {
 		clab.WithTopoFile(topoFile, ""),
 	)
 	log.SetLevel(dl)
-	log.Infof("Loaded %s", topoFile)
+	log.Debugf("Loaded %s", topoFile)
 	if err != nil {
 		return err
 	}
