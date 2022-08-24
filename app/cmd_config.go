@@ -94,10 +94,13 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 func RunWebConfig(wsconn *websocket.Conn, cmd string) error {
 	// ensure we always send a done message
 	defer func() {
-		wsconn.WriteJSON(&helpers.WsMessage{
+		err := wsconn.WriteJSON(&helpers.WsMessage{
 			Code:   helpers.WscConfig,
 			Config: &helpers.WsConfig{Cmd: "done"},
 		})
+		if err != nil {
+			log.Errorf("could not send done: %s", err)
+		}
 	}()
 
 	args, err := shlex.Split(cmd)
