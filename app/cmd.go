@@ -76,5 +76,5 @@ func Main() {
 	err = kctx.Run(Ctx)
 	kctx.FatalIfErrorf(err)
 
-	logLatestVersion()
+	logLatestVersion(1)
 }

@@ -32,25 +32,22 @@ func (r *CmdVersion) Run(ctx *helpers.Context) error {
 	fmt.Print("\n")
 
 	v, err := latestVersion(10)
-	if r.Upgrade {
-		if v == version {
-			fmt.Printf("\nYou already have the latest version\n")
-			return nil
-		}
-		fmt.Printf(`%s
-
- to upgrade, run:
-  bash -c "$(curl -sL https://labctl.net/get.sh)"
-
-`, v)
-		return nil
-	}
-
 	if err != nil {
 		fmt.Printf("could not fetch latest version: %s\n", err)
 	}
-	if v != "" {
-		fmt.Println(v)
+	if v != "" && v != version {
+		fmt.Printf("🎉 New labctl version %s is available!\n", v)
+	}
+	if v == version {
+		fmt.Printf("🎉 You already have the latest version!\n")
+		return nil
+	}
+
+	if r.Upgrade {
+		fmt.Print(`
+ to upgrade, run:
+  bash -c "$(curl -sL https://labctl.net/get.sh)"
+`)
 	}
 	return nil
 }
@@ -89,27 +86,25 @@ func _fetchLatestVersion() {
 		versionCh <- fmt.Sprintf("error decoding GitHub API response: %s", err)
 		return
 	}
-	newV := strings.TrimLeft(r.TagName, "v")
-
+	ver := strings.TrimLeft(r.TagName, "v")
+	if version == "0.0.0" {
+		version = ver + "-next"
+	}
 	if Ctx.DebugCount > 3 {
-		log.Debugf("Current version: %s, available version: %s", version, newV)
+		log.Debugf("Current version: %s, available version: %s", version, ver)
 	}
-	if newV != version {
-		versionCh <- newV
-	} else {
-		versionCh <- ""
-	}
+	versionCh <- ver
 }
 
 // Log the latest version if already available (and not already done).
 // Dont wait more than 1 second
-func logLatestVersion() {
-	v, err := latestVersion(1) // only wait for 1 second usually
+func logLatestVersion(delay_s time.Duration) {
+	v, err := latestVersion(delay_s) // only wait for 1 second usually
 	if err != nil {
 		log.Errorf("%s", err)
 	}
-	if v != "" {
-		log.Infof(v)
+	if v != "" && v != version {
+		log.Infof("🎉 New labctl version %s is available!", v)
 	}
 }
 
@@ -124,13 +119,17 @@ func latestVersion(delay_s time.Duration) (string, error) {
 		versionCh = nil
 	}()
 
+	if Ctx.DebugCount > 1 && delay_s > 1 {
+		log.Debugf("Waiting up to %v for the labctl version check to github.com", delay_s*time.Second)
+	}
+
 	select {
 	case ver, ok := <-versionCh:
 		if ok {
 			if strings.HasPrefix(ver, "error") {
 				return "", fmt.Errorf(ver)
 			}
-			return fmt.Sprintf("🎉 New labctl version %s is available!", ver), nil
+			return ver, nil
 		}
 	case <-time.After(delay_s * time.Second):
 		return "", fmt.Errorf("timeout fetching the new version")

@@ -55,8 +55,8 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 	if host == "" {
 		url = fmt.Sprintf("http://localhost%s or http://%s%s", r.Addr, utils.GetOutboundIP(), r.Addr)
 	}
+	logLatestVersion(5)
 	log.Infof("Access the web server on %s", url)
-
 	return http.ListenAndServe(r.Addr, handler)
 }
 
@@ -73,7 +73,7 @@ func websock(w http.ResponseWriter, r *http.Request) {
 	defer c.Close()
 
 	// immediately send a UI update
-	helpers.WsLogf(c, helpers.WscWarn, "websocket connected")
+	helpers.WsLogf(c, helpers.WscWarn, "websocket connected. version %s", version)
 
 	helpers.WsSendUiUpdate(c, Ctx)
 
