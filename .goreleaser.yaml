@@ -9,13 +9,15 @@ before:
 builds:
   - env:
       - CGO_ENABLED=0
+    ldflags:
+      - -X github.com/labctl/labctl/app.version={{.Version}} -X github.com/labctl/labctl/app.commit={{.ShortCommit}} -X github.com/labctl/labctl/app.date={{.Date}}
     goos:
       - linux
       #- darwin
     goarch:
       - amd64
       - arm64
-archives: []
+# archives: []
 #   - replacements:
 #       darwin: Darwin
 #       linux: Linux

@@ -13,7 +13,7 @@ import (
 )
 
 var cli struct {
-	Debug    int    `help:"Enable debug mode." short:"d" type:"counter" group:"Global Flags"`
+	Debug    int    `short:"d" help:"Enable debug mode." type:"counter" group:"Global Flags"`
 	Settings string `help:"Settings yaml file." type:"existingfile" group:"Global Flags"`
 
 	Color  CmdColor  `cmd:"" help:"Add some color to any Linux command (i.e. ssh)." short:"c" passthrough:""`
@@ -21,6 +21,7 @@ var cli struct {
 	Serve  CmdServe  `cmd:"" help:"Serve the web UI."`
 
 	InstallCompletions kongplete.InstallCompletions `cmd:"" help:"install shell completions"`
+	Version            CmdVersion                   `cmd:"" help:"show the labctl version"`
 }
 
 func GetCmdLineParser(ast interface{}) *kong.Kong {
@@ -69,7 +70,11 @@ func Main() {
 		Output:     &helpers.LogOutput{},
 	}
 
+	fetchLatestVersion()
+
 	// Call the Run() method of the selected parsed command.
 	err = kctx.Run(Ctx)
 	kctx.FatalIfErrorf(err)
+
+	logLatestVersion()
 }
