@@ -39,7 +39,7 @@ func (r *CmdVersion) Run(ctx *helpers.Context) error {
 		fmt.Printf("🎉 New labctl version %s is available!\n", v)
 	}
 	if v == version {
-		fmt.Printf("🎉 You already have the latest version!\n")
+		fmt.Printf("🎉 You have the latest version!\n")
 		return nil
 	}
 

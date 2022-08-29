@@ -43,7 +43,8 @@ func Main() {
 
 	// Handle completion requests
 	kongplete.Complete(parser,
-		kongplete.WithPredictor("file", complete.PredictFiles("*")),
+		kongplete.WithPredictor("topo", complete.PredictFiles("*.clab.y*ml")),
+		kongplete.WithPredictor("dir", complete.PredictDirs("*")),
 	)
 
 	kctx, err := parser.Parse(os.Args[1:])

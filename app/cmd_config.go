@@ -13,8 +13,8 @@ import (
 )
 
 type CmdConfig struct {
-	Topo          string   `short:"t" help:"topology file" type:"existingfile"`
-	TemplatePaths []string `short:"p" help:"paths to search for templates" type:"existingdir"`
+	Topo          string   `short:"t" help:"topology file" type:"existingfile" predictor:"topo"`
+	TemplatePaths []string `short:"p" help:"paths to search for templates" type:"existingdir" predictor:"dir"`
 	TemplateList  []string `short:"l" help:"template names to render"`
 	Filter        []string `short:"f" help:"nodes to include" optional:""`
 
