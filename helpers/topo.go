@@ -1,7 +1,9 @@
 package helpers
 
 import (
+	"context"
 	"encoding/json"
+	"net"
 	"os"
 	"time"
 
@@ -62,6 +64,23 @@ func (topo *Topo) VarsAsJson() (Vars, error) {
 	for _, node := range topo.Nodes {
 		name := node.Config().ShortName
 		v[name] = nc[name].Vars
+
+		host := node.Config().LongName
+		if ipv4, err := net.DefaultResolver.LookupIP(context.Background(), "ip4", host); err == nil {
+			if len(ipv4) == 1 {
+				v[name]["clab_management_ipv4"] = ipv4[0]
+			} else {
+				v[name]["clab_management_ipv4"] = ipv4
+			}
+		}
+		if ipv6, err := net.DefaultResolver.LookupIP(context.Background(), "ip6", host); err == nil {
+			if len(ipv6) == 1 {
+				v[name]["clab_management_ipv4"] = ipv6[0]
+			} else {
+				v[name]["clab_management_ipv6"] = ipv6
+			}
+		}
+
 	}
 	return v, nil
 }
