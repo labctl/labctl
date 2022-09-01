@@ -116,6 +116,7 @@ func websock(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				helpers.WsErrorf(c, err.Error())
 			}
+			WebConfigDone(c, 3)
 
 		default:
 			log.Warnf("unhandled websocket message: %v", wsmsg)

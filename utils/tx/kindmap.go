@@ -1,55 +1,68 @@
 package tx
 
+import log "github.com/sirupsen/logrus"
+
 type KindDef struct {
-	platform        string   // the scrapligo SSH platform definition
-	comment         string   // character to indicate line is a comment
-	commit, compare []string // commands to commit and compare sessions
+	Platform string   `yaml:"platform"` // the scrapligo SSH platform definition
+	Comment  string   `yaml:"comment"`  // character to indicate line is a comment
+	Commit   []string `yaml:"commit"`   // commands to commit and compare sessions
+	Compare  []string `yaml:"compare"`  // commands  compare sessions
 }
 
 var KindMap = map[string]KindDef{
 	"vr-sros": {
-		platform: "nokia_sros",
-		comment:  "#",
-		commit:   []string{"validate", "commit", "discard /"},
-		compare:  []string{"validate", "compare /", "discard /"},
+		Platform: "nokia_sros",
+		Comment:  "#",
+		Commit:   []string{"validate", "commit", "discard /"},
+		Compare:  []string{"validate", "compare /", "discard /"},
 	},
 	"srl": {
-		platform: "nokia_srl",
-		comment:  "#",
-		commit:   []string{"commit now", "discard stay"},
-		compare:  []string{"compare", "discard"},
+		Platform: "nokia_srl",
+		Comment:  "#",
+		Commit:   []string{"commit now", "discard stay"},
+		Compare:  []string{"compare", "discard"},
 	},
 	"ceos": {
-		platform: "arista_eos",
+		Platform: "arista_eos",
 	},
 	"crpd": {
-		platform: "juniper_junos",
+		Platform: "juniper_junos",
 	},
 	"vr-csr": {
-		platform: "cisco_iosxe",
+		Platform: "cisco_iosxe",
 	},
 	"vr-n9kv": {
-		platform: "cisco_nxos",
+		Platform: "cisco_nxos",
 	},
 	"vr-nxos": {
-		platform: "cisco_nxos",
+		Platform: "cisco_nxos",
 	},
 	"vr-pan": {
-		platform: "paloalto_panos",
+		Platform: "paloalto_panos",
 	},
 	"vr-veos": {
-		platform: "arista_eos",
+		Platform: "arista_eos",
 	},
 	"vr-vmx": {
-		platform: "juniper_junos",
+		Platform: "juniper_junos",
 	},
 	"vr-vqfx": {
-		platform: "juniper_junos",
+		Platform: "juniper_junos",
 	},
 	"vr-xrv": {
-		platform: "cisco_iosxr",
+		Platform: "cisco_iosxr",
 	},
 	"vr-xrv9k": {
-		platform: "cisco_iosxr",
+		Platform: "cisco_iosxr",
 	},
+}
+
+// Override KindMap with values from settings
+func KindMapOverride(kindmap map[string]KindDef) {
+	for k := range kindmap {
+		if DebugCount > 2 {
+			log.Debugf("Override KindMap[%s]. Please consider raising a PR to include this in labctl", k)
+		}
+		KindMap[k] = kindmap[k]
+	}
 }

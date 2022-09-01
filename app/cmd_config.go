@@ -28,6 +28,8 @@ type CmdConfig struct {
 func (r *CmdConfig) Run(ctx *helpers.Context) error {
 	var err error
 
+	r.TemplateList = utils.Unique(r.TemplateList)
+
 	if strings.HasPrefix(ctx.Command, "config ") { // Executed from the commandline
 		ctx.Command = strings.TrimPrefix(ctx.Command, "config ")
 		ctx.TopoFile = r.Topo
@@ -49,6 +51,10 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 			)
 		}
 	}
+	if len(r.TemplateList) == 0 {
+		return fmt.Errorf("you need to specify at least one template (-l/--template-list)")
+	}
+
 	ctx.NodeFilter = r.Filter
 
 	// Setup containerlab's config engine
@@ -91,18 +97,20 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 	return nil
 }
 
-func RunWebConfig(wsconn *websocket.Conn, cmd string) error {
-	// ensure we always send a done message
-	defer func() {
-		err := wsconn.WriteJSON(&helpers.WsMessage{
-			Code:   helpers.WscConfig,
-			Config: &helpers.WsConfig{Cmd: "done"},
-		})
-		if err != nil {
-			log.Errorf("could not send done: %s", err)
+func WebConfigDone(wsconn *websocket.Conn, retry int) {
+	err := wsconn.WriteJSON(&helpers.WsMessage{
+		Code:   helpers.WscConfig,
+		Config: &helpers.WsConfig{Cmd: "done"},
+	})
+	if err != nil {
+		log.Errorf("could not send done: %s", err)
+		if retry > 0 {
+			WebConfigDone(wsconn, retry-1)
 		}
-	}()
+	}
+}
 
+func RunWebConfig(wsconn *websocket.Conn, cmd string) error {
 	args, err := shlex.Split(cmd)
 	if err != nil {
 		return fmt.Errorf("%s\n\nwhile trying to split:\n\t%s", err, cmd)

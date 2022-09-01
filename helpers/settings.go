@@ -10,6 +10,7 @@ import (
 	"github.com/imdario/mergo"
 	"github.com/labctl/labctl/utils"
 	"github.com/labctl/labctl/utils/colorize"
+	"github.com/labctl/labctl/utils/tx"
 	"gopkg.in/yaml.v3"
 
 	log "github.com/sirupsen/logrus"
@@ -17,6 +18,8 @@ import (
 
 type Settings struct {
 	Colors []*colorize.Colorize `yaml:"colorize"`
+
+	Kindmap map[string]tx.KindDef `yaml:"kindmap"`
 }
 
 //go:embed settings.yml

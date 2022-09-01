@@ -85,10 +85,10 @@ func InitTemplatePaths(paths []string) (*orderedmap.OrderedMap[string, string], 
 		}
 		n := filepath.Base(p.Path)
 		i := 1
-		_, ok := res.Get(n)
-		for ok { // ensure a unique name
+		pval, ok := res.Get(n)
+		for ok && pval != p.Path { // ensure a unique name & does not already exist
 			tmp := fmt.Sprintf("%s_%d", n, i)
-			_, ok = res.Get(tmp)
+			pval, ok = res.Get(tmp)
 			if !ok {
 				n = tmp
 			}

@@ -51,6 +51,7 @@ func ConfigTx1(c *config.NodeConfig, action tx.Action) ([]*tx.Response, error) {
 	}
 
 	if transport == "ssh" {
+		tx.KindMapOverride(Ctx.Settings.Kindmap)
 		s := tx.SSHTx{}
 		i, err := s.Prepare(c)
 		if err != nil {

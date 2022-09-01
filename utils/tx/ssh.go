@@ -98,7 +98,7 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 	ssh_platform, ok := st.TargetNode.Config.Vars[vkSshPlatform]
 	if !ok {
 		if r, ok := KindMap[st.TargetNode.Kind]; ok {
-			ssh_platform = r.platform
+			ssh_platform = r.Platform
 		} else {
 			return nil, fmt.Errorf("no platform definition for node kind %s", st.TargetNode.Kind)
 		}
@@ -144,9 +144,9 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 		var actionCmds []string
 		if km, ok := KindMap[st.TargetNode.Kind]; ok {
 			if action == ACompare {
-				actionCmds = km.compare
+				actionCmds = km.Compare
 			} else if action == ACommit {
-				actionCmds = km.commit
+				actionCmds = km.Commit
 			}
 		}
 		lines.Commands = append(lines.Commands, actionCmds...)

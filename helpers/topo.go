@@ -75,7 +75,7 @@ func (topo *Topo) VarsAsJson() (Vars, error) {
 		}
 		if ipv6, err := net.DefaultResolver.LookupIP(context.Background(), "ip6", host); err == nil {
 			if len(ipv6) == 1 {
-				v[name]["clab_management_ipv4"] = ipv6[0]
+				v[name]["clab_management_ipv6"] = ipv6[0]
 			} else {
 				v[name]["clab_management_ipv6"] = ipv6
 			}

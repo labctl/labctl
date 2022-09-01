@@ -104,7 +104,7 @@ func logLatestVersion(delay_s time.Duration) {
 		log.Errorf("%s", err)
 	}
 	if v != "" && v != version {
-		log.Infof("🎉 New labctl version %s is available!", v)
+		log.Infof("🎉 New labctl version %s available! (current version: %s)", v, version)
 	}
 }
 
