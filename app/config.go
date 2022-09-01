@@ -34,6 +34,16 @@ func ConfigTx(configs map[string]*config.NodeConfig, ctx *helpers.Context) error
 			helpers.ColorResults(resp, ctx.Settings.Colors)
 		}
 
+		if len(resp) == 0 {
+			// Add a response if this node has no templates/responses
+			msg := ""
+			if len(cfg.Data) == 0 {
+				msg += fmt.Sprintf("No templates for node %s", nn)
+			} else {
+				msg += fmt.Sprintf("All ok from node %s", nn)
+			}
+			resp = []*tx.Response{{Node: nn, Response: msg}}
+		}
 		ctx.Output.LogResponses(resp, cfg)
 	}
 

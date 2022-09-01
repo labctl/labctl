@@ -116,9 +116,9 @@ func RunWebConfig(wsconn *websocket.Conn, cmd string) error {
 		return fmt.Errorf("%s\n\nwhile trying to split:\n\t%s", err, cmd)
 	}
 
-	// Parse using only the
-	var cli CmdConfig
-	p := GetCmdLineParser(&cli)
+	// Parse using config
+	var cliConfig CmdConfig
+	p := GetCmdLineParser(&cliConfig)
 	kctx, err := p.Parse(args)
 	if err != nil {
 		return fmt.Errorf("%s\n\nwhile trying to parse:\n\t%s", err, cmd)

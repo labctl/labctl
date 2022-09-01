@@ -30,6 +30,11 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 		return err
 	}
 
+	// Create new FS watcher
+	watcher := helpers.WatchFS(ctx)
+	defer watcher.Close()
+
+	// Start the web server
 	mux := http.NewServeMux()
 
 	mux.Handle("/favicon.ico", http.RedirectHandler("/labctl/favicon.ico", http.StatusSeeOther))
