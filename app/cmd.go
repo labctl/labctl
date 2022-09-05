@@ -73,9 +73,18 @@ func Main() {
 
 	fetchLatestVersion()
 
+	checkRoot()
+
 	// Call the Run() method of the selected parsed command.
 	err = kctx.Run(Ctx)
 	kctx.FatalIfErrorf(err)
 
 	logLatestVersion(1)
+}
+
+/** Check and warn if root */
+func checkRoot() {
+	if os.Getegid() == 0 {
+		log.Warn("You are running as root user.")
+	}
 }

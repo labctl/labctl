@@ -105,6 +105,7 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 	}
 
 	opt := []util.Option{
+		options.WithTransportType("standard"),
 		options.WithAuthNoStrictKey(),
 		options.WithAuthUsername(ssh_user),
 		options.WithAuthPassword(ssh_pass),
