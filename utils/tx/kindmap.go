@@ -19,8 +19,8 @@ var KindMap = map[string]KindDef{
 	"srl": {
 		Platform: "nokia_srl",
 		Comment:  "#",
-		Commit:   []string{"commit now", "discard stay"},
-		Compare:  []string{"compare", "discard"},
+		Commit:   []string{"commit validate", "commit now"},
+		Compare:  []string{"commit validate", "diff", "discard now"},
 	},
 	"ceos": {
 		Platform: "arista_eos",

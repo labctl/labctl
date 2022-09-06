@@ -21,7 +21,13 @@ type CmdServe struct {
 }
 
 func (r *CmdServe) Run(ctx *helpers.Context) error {
-	err := ctx.Load(r.Topo)
+	var err error
+	r.Topo, err = utils.EnsureTopo(r.Topo)
+	if err != nil {
+		return err
+	}
+
+	err = ctx.Load(r.Topo)
 	if err != nil {
 		return err
 	}

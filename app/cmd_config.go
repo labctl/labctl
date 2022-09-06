@@ -30,7 +30,13 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 
 	r.TemplateList = utils.Unique(r.TemplateList)
 
-	if strings.HasPrefix(ctx.Command, "config ") { // Executed from the commandline
+	if strings.HasPrefix(ctx.Command, "config ") {
+		// Executed from the commandline
+		r.Topo, err = utils.EnsureTopo(r.Topo)
+		if err != nil {
+			return err
+		}
+
 		ctx.Command = strings.TrimPrefix(ctx.Command, "config ")
 		ctx.TopoFile = r.Topo
 		// Ensure paths are valid valid
@@ -38,8 +44,8 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 		if err != nil {
 			return err
 		}
-
-	} else { // Executed form a websocket
+	} else {
+		// Executed form a websocket
 		log.Debugf("Websocket %s %v", ctx.Command, ctx)
 		if r.Topo != "" {
 			return fmt.Errorf("--topo/-t not allowed. Fixed at %s", Ctx.TopoFile)
@@ -60,6 +66,7 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 	// Setup containerlab's config engine
 	config.TemplateNames = r.TemplateList
 	config.TemplatePaths = ctx.TemplatePathsSlice()
+	log.Debugf("Search path: %v", config.TemplatePaths)
 
 	configs, err := LoadAndPrep(&ctx.NodeFilter, ctx.TopoFile, ctx.Command != "vars")
 	if err != nil {
