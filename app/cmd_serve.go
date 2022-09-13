@@ -18,6 +18,7 @@ type CmdServe struct {
 	TemplatePaths []string `short:"p" help:"Paths to search for templates" type:"path" predictor:"dir"`
 
 	Addr string `help:"Serve on addr." default:":8080"`
+	Url  string `help:"Serve on a custom URL path" default:"/labctl"`
 }
 
 func (r *CmdServe) Run(ctx *helpers.Context) error {
@@ -43,17 +44,17 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 	// Start the web server
 	mux := http.NewServeMux()
 
-	mux.Handle("/favicon.ico", http.RedirectHandler("/labctl/favicon.ico", http.StatusSeeOther))
-	mux.Handle("/", http.RedirectHandler("/labctl", http.StatusSeeOther))
-	mux.HandleFunc("/labctl/ws", websock)
-	mux.HandleFunc("/labctl/topo", http_topo)
-	mux.HandleFunc("/labctl/vars", http_vars)
-	mux.HandleFunc("/labctl/templates", http_templates)
+	mux.Handle("/favicon.ico", http.RedirectHandler(r.Url+"/favicon.ico", http.StatusSeeOther))
+	mux.Handle("/", http.RedirectHandler(r.Url, http.StatusSeeOther))
+	mux.HandleFunc(r.Url+"/ws", websock)
+	mux.HandleFunc(r.Url+"/topo", http_topo)
+	mux.HandleFunc(r.Url+"/vars", http_vars)
+	mux.HandleFunc(r.Url+"/templates", http_templates)
 	mux.HandleFunc("/error", http_error)
 
-	frontendServer := frontend.LabctlFileServer()
-	mux.Handle("/labctl", frontendServer)
-	mux.Handle("/labctl/", frontendServer)
+	frontendServer := frontend.LabctlFileServer(r.Url)
+	mux.Handle(r.Url, frontendServer)
+	mux.Handle(r.Url+"/", frontendServer)
 
 	handler := cors.Default().Handler(&frontend.SlashFix{Mux: mux})
 

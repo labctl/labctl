@@ -21,7 +21,12 @@ func (spafs SPAFileSystem) index(path, msg string) (http.File, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return f, nil
+
+	fr := ReplaceText{
+		File: f,
+		Url:  spafs.urlRoot,
+	}
+	return fr, nil
 }
 
 // Open file with fallback to index.html
@@ -49,8 +54,8 @@ func (spafs SPAFileSystem) Open(path string) (http.File, error) {
 //go:embed html/*
 var labctlHtml embed.FS
 
-func LabctlFileServer() http.Handler {
-	return SinglePageAppFileServer(labctlHtml, "/labctl", "html")
+func LabctlFileServer(url string) http.Handler {
+	return SinglePageAppFileServer(labctlHtml, url, "html")
 }
 
 func SinglePageAppFileServer(hfs fs.FS, urlRoot, fsRoot string) http.Handler {
