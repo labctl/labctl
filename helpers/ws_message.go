@@ -11,12 +11,11 @@ import (
 type WsMsgCode string
 
 const (
-	WscHeartbeat WsMsgCode = "."
-	WscError     WsMsgCode = "error"
-	WscWarn      WsMsgCode = "warn"
-	WscTemplate  WsMsgCode = "template"
-	WscUiData    WsMsgCode = "uidata"
-	WscConfig    WsMsgCode = "config"
+	WscError    WsMsgCode = "error"
+	WscWarn     WsMsgCode = "warn"
+	WscTemplate WsMsgCode = "template"
+	WscUiData   WsMsgCode = "uidata"
+	WscConfig   WsMsgCode = "config"
 )
 
 type WsMessage struct {

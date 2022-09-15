@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -97,15 +98,18 @@ func websock(w http.ResponseWriter, r *http.Request) {
 			log.Println("read:", err)
 			break
 		}
+
+		if bytes.Equal(message, []byte("ping")) {
+			_ = c.WriteMessage(0, message)
+			continue
+		}
+
 		err = wsmsg.UnmarshalJson(message)
 		if err != nil {
 			log.Warnf("Ws Rx: %s: %v", err.Error(), message)
 			continue
 		}
 		switch wsmsg.Code {
-		case helpers.WscHeartbeat:
-			c.WriteJSON(wsmsg)
-
 		case helpers.WscUiData: // save UI settings
 			wsmsg.UiData.WriteFile(Ctx)
 			Ctx.Template, err = utils.ParseTemplates(wsmsg.UiData.Templates)
