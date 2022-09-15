@@ -28,13 +28,8 @@ func (r ReplaceText) Stat() (fs.FileInfo, error) {
 	return r.File.Stat()
 }
 
-func (r ReplaceText) Read(p []byte) (int, error) {
-	c, err := r.File.Read(p)
-	if err != nil {
-		return c, err
-	}
-	s0 := []byte(`"/labctl`)
-	s1 := []byte(fmt.Sprintf("%8s", `"`+r.Url)[:8])
+// Replace in-place. Only up to length of s0
+func replaceAll(p []byte, s0 []byte, s1 []byte) {
 	for {
 		li := bytes.Index(p, s0)
 		if li < 0 {
@@ -44,6 +39,16 @@ func (r ReplaceText) Read(p []byte) (int, error) {
 			p[li+i] = s1[i]
 		}
 	}
+}
 
+func (r ReplaceText) Read(p []byte) (int, error) {
+	c, err := r.File.Read(p)
+	if err != nil || r.Url == "/labctl" {
+		return c, err
+	}
+	// html and js
+	replaceAll(p, []byte(`"/labctl`), []byte(fmt.Sprintf("%8s", `"`+r.Url)))
+	// css fonts
+	replaceAll(p, []byte(`url(/labctl`), []byte(fmt.Sprintf("url(%7s", r.Url)))
 	return c, err
 }

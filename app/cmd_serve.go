@@ -104,6 +104,8 @@ func websock(w http.ResponseWriter, r *http.Request) {
 		}
 		switch wsmsg.Code {
 		case helpers.WscHeartbeat:
+			c.WriteJSON(wsmsg)
+
 		case helpers.WscUiData: // save UI settings
 			wsmsg.UiData.WriteFile(Ctx)
 			Ctx.Template, err = utils.ParseTemplates(wsmsg.UiData.Templates)

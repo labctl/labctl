@@ -21,12 +21,10 @@ func (spafs SPAFileSystem) index(path, msg string) (http.File, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	fr := ReplaceText{
+	return ReplaceText{
 		File: f,
 		Url:  spafs.urlRoot,
-	}
-	return fr, nil
+	}, nil
 }
 
 // Open file with fallback to index.html
@@ -46,7 +44,10 @@ func (spafs SPAFileSystem) Open(path string) (http.File, error) {
 		return spafs.index(path, "isDir()")
 	}
 	log.Debugf("OK '%s'", path)
-	return f, nil
+	return ReplaceText{
+		File: f,
+		Url:  spafs.urlRoot,
+	}, nil
 }
 
 // Embed static web app. Ensure we have index.html

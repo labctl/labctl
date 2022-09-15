@@ -13,13 +13,13 @@ var KindMap = map[string]KindDef{
 	"vr-sros": {
 		Platform: "nokia_sros",
 		Comment:  "#",
-		Commit:   []string{"validate", "commit", "discard /"},
+		Commit:   []string{"validate", "compare / ", "commit", "discard /"},
 		Compare:  []string{"validate", "compare /", "discard /"},
 	},
 	"srl": {
 		Platform: "nokia_srl",
 		Comment:  "#",
-		Commit:   []string{"commit validate", "commit now"},
+		Commit:   []string{"commit validate", "diff ", "commit now"},
 		Compare:  []string{"commit validate", "diff", "discard now"},
 	},
 	"ceos": {

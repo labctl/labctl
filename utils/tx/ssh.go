@@ -184,6 +184,10 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 					if res.Command == c {
 						res.Level = 0 // Debug
 						res.Source += " " + strings.ToUpper(action.String())
+						if strings.HasSuffix(c, " ") {
+							// action commands ending with a space considered "silent"
+							istart += 1
+						}
 					}
 				}
 
