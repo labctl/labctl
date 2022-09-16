@@ -182,11 +182,12 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 				// Mark action commands
 				for _, c := range actionCmds {
 					if res.Command == c {
-						res.Level = 0 // Debug
-						res.Source += " " + strings.ToUpper(action.String())
+						res.Level = log.InfoLevel
+						res.Source += " " + action.Char()
 						if strings.HasSuffix(c, " ") {
 							// action commands ending with a space considered "silent"
 							istart += 1
+							res.Level = log.DebugLevel
 						}
 					}
 				}
@@ -200,13 +201,13 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 		if action == ACommit {
 			r := &Response{
 				Node:     st.TargetNode.ShortName,
-				Source:   "send",
+				Source:   lines.Source + " " + action.Char(),
 				Response: fmt.Sprintf("committed %d lines", count),
-				Level:    1,
+				Level:    log.InfoLevel,
 			}
 			if changes > 0 {
 				r.Response += fmt.Sprintf(", %d failed commands", changes)
-				r.Level = 1
+				r.Level = log.WarnLevel
 			}
 			result = append(result, r)
 		}
@@ -214,9 +215,9 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 			if changes == 0 {
 				r := &Response{
 					Node:     st.TargetNode.ShortName,
-					Source:   "send",
+					Source:   lines.Source + " " + action.Char(),
 					Response: "No changes to the configuration",
-					Level:    1,
+					Level:    log.InfoLevel,
 				}
 				result = append(result, r)
 			}

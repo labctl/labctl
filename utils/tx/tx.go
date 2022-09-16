@@ -17,10 +17,17 @@ const (
 	ACommit
 )
 
-var actionStrs = []string{"unknown", "send", "compare", "commit"}
+var (
+	actionStrs  = []string{"unknown", "send", "compare", "commit"}
+	actionChars = []string{"❔", "▶", "🔍", "⏬"}
+)
 
 func (c Action) String() string {
 	return actionStrs[c]
+}
+
+func (c Action) Char() string {
+	return actionChars[c]
 }
 
 // Parse a string and return an action

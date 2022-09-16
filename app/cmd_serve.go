@@ -1,7 +1,6 @@
 package app
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -99,8 +98,8 @@ func websock(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		if bytes.Equal(message, []byte("ping")) {
-			_ = c.WriteMessage(0, message)
+		if len(message) == 1 && message[0] == byte('%') {
+			_ = c.WriteMessage(websocket.TextMessage, message)
 			continue
 		}
 
