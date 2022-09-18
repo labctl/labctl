@@ -1,15 +1,19 @@
-colorize:
+colorize: # use single quotes!
   - regex: '\d+\.\d+\.\d+\.\d+(/\d+)?'
     color: magenta
-  - regex: "(?i)\b(true|valid|used)\b"
-    color: hiwhite,bold
+  - regex: '(?i)\b(true|valid|used)\b'
+    color: green
   - regex: "(?i)(false|none)"
     color: hired
   - regex: shutdown
     color: yellow
   - regex: '(?i)\b(error|down)\b'
     color: red
-  - regex: '(?i)(\benabled?|\bup\b)'
+  - regex: '(?i)\b(enabled?|up)\b'
     color: green
-  - regex: "(?i)\bdisabled?"
+  - regex: '(?i)\bdisabled?'
     color: yellow
+  - regex: '(?m)^\+\s'
+    color: bggreen,bold
+  - regex: '(?m)^\-\s'
+    color: bgred,bold
