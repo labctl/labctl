@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/google/shlex"
-	"github.com/gorilla/websocket"
 	"github.com/labctl/labctl/helpers"
 	"github.com/labctl/labctl/utils"
 	log "github.com/sirupsen/logrus"
@@ -104,23 +103,20 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 	return nil
 }
 
-func WebConfigDone(wsconn *websocket.Conn, retry int) {
-	err := wsconn.WriteJSON(&helpers.WsMessage{
+func WebConfigDone(ws chan<- interface{}, retry int) {
+	ws <- &helpers.WsMessage{
 		Code:   helpers.WscConfig,
 		Config: &helpers.WsConfig{Cmd: "done"},
-	})
-	if err != nil {
-		log.Errorf("could not send done: %s", err)
-		if retry > 0 {
-			WebConfigDone(wsconn, retry-1)
-		}
 	}
 }
 
-func RunWebConfig(wsconn *websocket.Conn, cmd string) error {
+func RunWebConfig(ws chan<- interface{}, cmd string) {
+	defer WebConfigDone(ws, 3)
+
 	args, err := shlex.Split(cmd)
 	if err != nil {
-		return fmt.Errorf("%s\n\nwhile trying to split:\n\t%s", err, cmd)
+		helpers.WsErrorf(ws, "%s\n\nwhile trying to split:\n\t%s", err, cmd)
+		return
 	}
 
 	// Parse using config
@@ -128,15 +124,21 @@ func RunWebConfig(wsconn *websocket.Conn, cmd string) error {
 	p := GetCmdLineParser(&cliConfig)
 	kctx, err := p.Parse(args)
 	if err != nil {
-		return fmt.Errorf("%s\n\nwhile trying to parse:\n\t%s", err, cmd)
+		helpers.WsErrorf(ws, "%s\n\nwhile trying to parse:\n\t%s", err, cmd)
+		return
 	}
 
 	// Copy the global context, update the output & command
 	nctx := Ctx
 	nctx.Output = &helpers.WebSocketOutput{
-		Conn: wsconn,
+		Ws: ws,
 	}
+	nctx.Async = true
 	nctx.Command = kctx.Command()
 
-	return kctx.Run(nctx)
+	err = kctx.Run(nctx)
+	if err != nil {
+		helpers.WsErrorf(ws, err.Error())
+		return
+	}
 }

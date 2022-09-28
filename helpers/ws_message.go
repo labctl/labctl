@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -71,19 +70,18 @@ func (w *WsMessage) String() string {
 	return string(res)
 }
 
-func WsErrorf(conn *websocket.Conn, msg string, args ...interface{}) {
-	WsLogf(conn, WscError, msg, args...)
+func WsErrorf(ws chan<- interface{}, msg string, args ...interface{}) {
+	WsLogf(ws, WscError, msg, args...)
 }
 
-func WsWarnf(conn *websocket.Conn, msg string, args ...interface{}) {
-	WsLogf(conn, WscWarn, msg, args...)
+func WsWarnf(ws chan<- interface{}, msg string, args ...interface{}) {
+	WsLogf(ws, WscWarn, msg, args...)
 }
 
-func WsLogf(conn *websocket.Conn, code WsMsgCode, msg string, args ...interface{}) {
-	m := fmt.Sprintf(msg, args...)
+func WsLogf(ws chan<- interface{}, code WsMsgCode, msg string, args ...interface{}) {
 	wsmsg := &WsMessage{
 		Code: code,
-		Msg:  m,
+		Msg:  fmt.Sprintf(msg, args...),
 	}
-	WsWriteJSON(conn, wsmsg)
+	ws <- wsmsg
 }

@@ -88,26 +88,42 @@ func (u *WsUiData) ReadFile(ctx *Context) error {
 	return nil
 }
 
-func WsWriteJSON(conn *websocket.Conn, wsmsg *WsMessage) {
-	err := conn.WriteJSON(wsmsg)
-	if err != nil {
-		log.Errorf("could not write to the websocket: %s", wsmsg.String())
-		return
-	}
-	if DebugCount > 0 {
-		log.Debugf("Ws Tx: %s", wsmsg.String())
-	}
-}
-
-func WsSendUiUpdate(conn *websocket.Conn, ctx *Context) {
+func WsSendUiUpdate(ws chan<- interface{}, ctx *Context) {
 	wsmsg := &WsMessage{
 		Code:   WscUiData,
 		UiData: NewWsUiData(),
 	}
 	err := wsmsg.UiData.ReadFile(ctx)
 	if err != nil {
-		WsErrorf(conn, "could not read .labctl.yml")
+		WsErrorf(ws, "could not read .labctl.yml")
 		return
 	}
-	WsWriteJSON(conn, wsmsg)
+	ws <- wsmsg
+}
+
+func WsChannel(conn *websocket.Conn) chan<- interface{} {
+	c := make(chan interface{})
+
+	go func() {
+		for {
+			wsmsg, ok := <-c
+			if !ok {
+				return
+			}
+			if wsmsg == nil { // pong
+				_ = conn.WriteMessage(websocket.TextMessage, []byte("%"))
+				continue
+			}
+			if DebugCount > 0 {
+				log.Debugf("Ws Tx: %s", wsmsg)
+			}
+			err := conn.WriteJSON(wsmsg)
+			if err != nil {
+				log.Errorf("could not write to the websocket: %s", wsmsg)
+				return
+			}
+		}
+	}()
+
+	return c
 }

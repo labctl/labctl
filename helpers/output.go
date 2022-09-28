@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"github.com/gorilla/websocket"
 	"github.com/labctl/labctl/utils/colorize"
 	"github.com/labctl/labctl/utils/tx"
 	"github.com/srl-labs/containerlab/clab/config"
@@ -43,7 +42,7 @@ func (l *LogOutput) PreferStdout() bool {
 
 // Implements ResultOutput
 type WebSocketOutput struct {
-	Conn *websocket.Conn
+	Ws chan<- interface{}
 }
 
 func (ws *WebSocketOutput) Info(node string, msg string) {
@@ -53,7 +52,7 @@ func (ws *WebSocketOutput) Info(node string, msg string) {
 			Results: []*tx.Response{{Node: node, Response: msg, Level: log.DebugLevel}},
 		},
 	}
-	WsWriteJSON(ws.Conn, wsmsg)
+	ws.Ws <- wsmsg
 }
 
 func (ws *WebSocketOutput) Error(node string, msg string) {
@@ -63,7 +62,7 @@ func (ws *WebSocketOutput) Error(node string, msg string) {
 			Results: []*tx.Response{{Node: node, Response: msg, Level: log.ErrorLevel}},
 		},
 	}
-	WsWriteJSON(ws.Conn, wsmsg)
+	ws.Ws <- wsmsg
 }
 
 func (ws *WebSocketOutput) LogResponses(obj []*tx.Response, nc *config.NodeConfig) {
@@ -74,7 +73,7 @@ func (ws *WebSocketOutput) LogResponses(obj []*tx.Response, nc *config.NodeConfi
 			Input:   nc,
 		},
 	}
-	WsWriteJSON(ws.Conn, wsmsg)
+	ws.Ws <- wsmsg
 }
 
 func (l *WebSocketOutput) PreferStdout() bool {

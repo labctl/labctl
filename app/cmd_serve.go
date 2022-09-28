@@ -77,29 +77,32 @@ var wsupgrader = websocket.Upgrader{
 }
 
 func websock(w http.ResponseWriter, r *http.Request) {
-	c, err := wsupgrader.Upgrade(w, r, nil)
+	wsconn, err := wsupgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
 		return
 	}
-	defer c.Close()
+	defer wsconn.Close()
+
+	ws := helpers.WsChannel(wsconn)
 
 	// immediately send a UI update
-	helpers.WsLogf(c, helpers.WscWarn, "websocket connected. version %s", version)
+	helpers.WsWarnf(ws, "websocket connected. version %s", version)
 
-	helpers.WsSendUiUpdate(c, Ctx)
+	helpers.WsSendUiUpdate(ws, Ctx)
 
 	var wsmsg helpers.WsMessage
 
 	for {
-		_, message, err := c.ReadMessage()
+		_, message, err := wsconn.ReadMessage()
 		if err != nil {
 			log.Println("read:", err)
 			break
 		}
 
 		if len(message) == 1 && message[0] == byte('%') {
-			_ = c.WriteMessage(websocket.TextMessage, message)
+			// _ = c.WriteMessage(websocket.TextMessage, message)
+			ws <- nil
 			continue
 		}
 
@@ -113,27 +116,23 @@ func websock(w http.ResponseWriter, r *http.Request) {
 			wsmsg.UiData.WriteFile(Ctx)
 			Ctx.Template, err = utils.ParseTemplates(wsmsg.UiData.Templates)
 			if err != nil {
-				helpers.WsErrorf(c, "cannot parse template: %s", err)
+				helpers.WsErrorf(ws, "cannot parse template: %s", err)
 			}
 
 		case helpers.WscTemplate: // render template
 			err := wsmsg.Template.Render(Ctx)
 			if err != nil {
-				helpers.WsWarnf(c, err.Error())
+				helpers.WsWarnf(ws, err.Error())
 				continue
 			}
 			wsmsg.Template.ClearInput()
-			err = c.WriteJSON(wsmsg)
+			ws <- wsmsg
 			if err != nil {
 				log.Errorf("could not write to the websocket: %s", err)
 			}
 
 		case helpers.WscConfig: // run the config command
-			err = RunWebConfig(c, wsmsg.Config.Cmd)
-			if err != nil {
-				helpers.WsErrorf(c, err.Error())
-			}
-			WebConfigDone(c, 3)
+			go RunWebConfig(ws, wsmsg.Config.Cmd)
 
 		default:
 			log.Warnf("unhandled websocket message: %v", wsmsg)

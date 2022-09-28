@@ -11,6 +11,7 @@ type Context struct {
 	Command    string
 	DebugCount int
 	Settings   *Settings
+	Async      bool
 
 	// used by config, serve
 	TopoFile string

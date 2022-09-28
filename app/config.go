@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/labctl/labctl/helpers"
 	"github.com/labctl/labctl/utils"
@@ -20,34 +21,47 @@ func ConfigTx(configs map[string]*config.NodeConfig, ctx *helpers.Context) error
 	if err != nil {
 		return err
 	}
+	var wg sync.WaitGroup
 	for nn, cfg := range configs {
 		if !utils.Contains(ctx.NodeFilter, nn) {
 			continue
 		}
-
-		resp, err := ConfigTx1(cfg, act)
-		if err != nil {
-			ctx.Output.Error(cfg.TargetNode.ShortName, err.Error())
+		if !ctx.Async {
+			ConfigTx1PP(ctx, act, nn, cfg)
+			continue
 		}
-
-		if Ctx.Settings != nil && Ctx.Settings.Colors != nil {
-			helpers.ColorResults(resp, ctx.Settings.Colors)
-		}
-
-		if len(resp) == 0 {
-			// Add a response if this node has no templates/responses
-			msg := ""
-			if len(cfg.Data) == 0 {
-				msg += fmt.Sprintf("No templates for node %s", nn)
-			} else {
-				msg += fmt.Sprintf("All ok from node %s", nn)
-			}
-			resp = []*tx.Response{{Node: nn, Response: msg}}
-		}
-		ctx.Output.LogResponses(resp, cfg)
+		wg.Add(1)
+		go func(nn string, cfg *config.NodeConfig) {
+			defer wg.Done()
+			ConfigTx1PP(ctx, act, nn, cfg)
+		}(nn, cfg)
 	}
+	wg.Wait()
 
 	return nil
+}
+
+func ConfigTx1PP(ctx *helpers.Context, act tx.Action, nn string, cfg *config.NodeConfig) {
+	resp, err := ConfigTx1(cfg, act)
+	if err != nil {
+		ctx.Output.Error(cfg.TargetNode.ShortName, err.Error())
+	}
+
+	if Ctx.Settings != nil && Ctx.Settings.Colors != nil {
+		helpers.ColorResults(resp, ctx.Settings.Colors)
+	}
+
+	if len(resp) == 0 {
+		// Add a response if this node has no templates/responses
+		msg := ""
+		if len(cfg.Data) == 0 {
+			msg += fmt.Sprintf("No templates for node %s", nn)
+		} else {
+			msg += fmt.Sprintf("All ok from node %s", nn)
+		}
+		resp = []*tx.Response{{Node: nn, Response: msg}}
+	}
+	ctx.Output.LogResponses(resp, cfg)
 }
 
 const vkTransport = "transport"
