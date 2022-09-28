@@ -9,7 +9,7 @@ require (
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/gorilla/websocket v1.5.0
-	github.com/hairyhenderson/gomplate/v3 v3.11.2
+	github.com/hairyhenderson/gomplate/v3 v3.11.3
 	github.com/imdario/mergo v0.3.13
 	github.com/kellerza/template v0.0.6
 	github.com/posener/complete v1.2.3
@@ -17,7 +17,7 @@ require (
 	github.com/scrapli/scrapligo v1.1.2
 	github.com/sirikothe/gotextfsm v1.0.1-0.20200816110946-6aa2cfd355e4
 	github.com/sirupsen/logrus v1.9.0
-	github.com/srl-labs/containerlab v0.31.1
+	github.com/srl-labs/containerlab v0.32.0
 	github.com/willabides/kongplete v0.3.0
 	github.com/wk8/go-ordered-map/v2 v2.0.0
 	golang.org/x/crypto v0.0.0-20220824171710-5757bc0c5503
@@ -48,7 +48,7 @@ require (
 	github.com/armon/go-metrics v0.4.0 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/awalterschulze/gographviz v2.0.3+incompatible // indirect
-	github.com/aws/aws-sdk-go v1.44.44 // indirect
+	github.com/aws/aws-sdk-go v1.44.96 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.16.5 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.4.1 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.15.11 // indirect
@@ -101,8 +101,8 @@ require (
 	github.com/containers/image/v5 v5.22.0 // indirect
 	github.com/containers/libtrust v0.0.0-20200511145503-9c3a6c22cd9a // indirect
 	github.com/containers/ocicrypt v1.1.5 // indirect
-	github.com/containers/podman/v4 v4.2.0 // indirect
-	github.com/containers/psgo v1.7.2 // indirect
+	github.com/containers/podman/v4 v4.2.1 // indirect
+	github.com/containers/psgo v1.7.3 // indirect
 	github.com/containers/storage v1.42.0 // indirect
 	github.com/coreos/go-iptables v0.6.0 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
@@ -114,7 +114,7 @@ require (
 	github.com/disiqueira/gotree/v3 v3.0.2 // indirect
 	github.com/docker/cli v20.10.16+incompatible // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
-	github.com/docker/docker v20.10.17+incompatible // indirect
+	github.com/docker/docker v20.10.18+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.6.4 // indirect
 	github.com/docker/go-connections v0.4.1-0.20210727194412-58542c764a11 // indirect
 	github.com/docker/go-events v0.0.0-20190806004212-e31b211e4f1c // indirect
@@ -147,7 +147,7 @@ require (
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/certificate-transparency-go v1.1.3 // indirect
 	github.com/google/gnostic v0.6.9 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
+	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-containerregistry v0.10.0 // indirect
 	github.com/google/go-intervals v0.0.2 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
@@ -313,10 +313,10 @@ require (
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20220617031537-928513b29760 // indirect
 	gocloud.dev v0.25.1-0.20220408200107-09b10f7359f7 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
-	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
+	golang.org/x/net v0.0.0-20220909164309-bea034e7d591 // indirect
 	golang.org/x/oauth2 v0.0.0-20220622183110-fd043fe589d2 // indirect
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
-	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
+	golang.org/x/sys v0.0.0-20220823224334-20c2bfdbfe24 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
 	golang.org/x/tools v0.1.12 // indirect
