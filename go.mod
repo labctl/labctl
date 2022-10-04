@@ -12,11 +12,13 @@ require (
 	github.com/hairyhenderson/gomplate/v3 v3.11.3
 	github.com/imdario/mergo v0.3.13
 	github.com/kellerza/template v0.0.6
+	github.com/pkg/errors v0.9.1
 	github.com/posener/complete v1.2.3
 	github.com/rs/cors v1.8.2
 	github.com/scrapli/scrapligo v1.1.2
 	github.com/sirikothe/gotextfsm v1.0.1-0.20200816110946-6aa2cfd355e4
 	github.com/sirupsen/logrus v1.9.0
+	github.com/sorenisanerd/gotty v1.5.0
 	github.com/srl-labs/containerlab v0.32.0
 	github.com/willabides/kongplete v0.3.0
 	github.com/wk8/go-ordered-map/v2 v2.0.0
@@ -39,6 +41,7 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
 	github.com/Microsoft/hcsshim v0.9.4 // indirect
+	github.com/NYTimes/gziphandler v1.1.1 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20220517143526-88bb52951d5b // indirect
 	github.com/Shopify/ejson v1.3.3 // indirect
 	github.com/VividCortex/ewma v1.2.0 // indirect
@@ -237,7 +240,6 @@ require (
 	github.com/ostreedev/ostree-go v0.0.0-20210805093236-719684c64e4f // indirect
 	github.com/otiai10/copy v1.2.0 // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/proglottis/gpgme v0.1.3 // indirect
 	github.com/prometheus/client_golang v1.12.2 // indirect

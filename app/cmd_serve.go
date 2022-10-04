@@ -9,6 +9,7 @@ import (
 	"github.com/labctl/labctl/helpers"
 	"github.com/labctl/labctl/helpers/frontend"
 	"github.com/labctl/labctl/utils"
+	"github.com/labctl/labctl/utils/webpty"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 )
@@ -47,6 +48,7 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 	mux.Handle("/favicon.ico", http.RedirectHandler(r.Url+"/favicon.ico", http.StatusSeeOther))
 	mux.Handle("/", http.RedirectHandler(r.Url, http.StatusSeeOther))
 	mux.HandleFunc(r.Url+"/ws", websock)
+	mux.HandleFunc(r.Url+"/wspty", webpty.Websock)
 	mux.HandleFunc(r.Url+"/topo", http_topo)
 	mux.HandleFunc(r.Url+"/vars", http_vars)
 	mux.HandleFunc(r.Url+"/templates", http_templates)
