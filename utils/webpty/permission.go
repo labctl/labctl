@@ -20,15 +20,15 @@ func allow(cmd string) (string, []string, error) {
 		// return
 	}
 	if len(args) == 0 {
-		return "", nil, errors.New("No cmd specified.")
+		return "", nil, errors.New("no cmd specified.")
 	}
 	c := args[0]
-	if c == "labctl" && strings.Contains(cmd, "color") && !strings.Contains(cmd, "color ssh") {
-		return "", nil, errors.Errorf("Only 'color ssh' allowed! Command not allowed: %s", cmd)
+	if c == "labctl" && strings.Contains(cmd, "color") && !strings.HasPrefix(cmd, "labctl color ssh") {
+		return "", nil, errors.New("only 'labctl color ssh <host>' allowed!")
 	}
 
 	if !utils.Contains([]string{"ping", "clab", "labctl"}, c) {
-		return "", nil, errors.Errorf("Command not allowed: %s", cmd)
+		return "", nil, errors.Errorf("command not allowed: %s", cmd)
 	}
 	return args[0], args[1:], nil
 }

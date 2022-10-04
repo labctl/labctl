@@ -117,6 +117,13 @@ func Unique[T comparable](elems []T) []T {
 	return result
 }
 
+func Must[T comparable](v T, err error) T {
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return v
+}
+
 // Check and warn if root
 func CheckRoot() {
 	if os.Getegid() == 0 {

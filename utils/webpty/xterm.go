@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"github.com/hairyhenderson/gomplate/v3/base64"
+	"github.com/labctl/labctl/utils"
 	"github.com/pkg/errors"
 	"github.com/sorenisanerd/gotty/backend/localcommand"
 	"github.com/sorenisanerd/gotty/webtty"
@@ -53,6 +55,9 @@ func handle(ctx context.Context, wsconn *websocket.Conn) error {
 
 	cmd, args, err := allow(init.Cmd)
 	if err != nil {
+		// wsconn.WriteMessage(websocket.TextMessage, []byte(string(webtty.UnknownOutput)+"Command not allowed"))
+		b64 := utils.Must(base64.Encode([]byte(err.Error())))
+		wsconn.WriteMessage(websocket.TextMessage, []byte(string(webtty.Output)+b64))
 		return err
 	}
 
