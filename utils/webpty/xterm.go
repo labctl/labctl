@@ -57,7 +57,7 @@ func handle(ctx context.Context, wsconn *websocket.Conn) error {
 	if err != nil {
 		// wsconn.WriteMessage(websocket.TextMessage, []byte(string(webtty.UnknownOutput)+"Command not allowed"))
 		b64 := utils.Must(base64.Encode([]byte(err.Error())))
-		wsconn.WriteMessage(websocket.TextMessage, []byte(string(webtty.Output)+b64))
+		_ = wsconn.WriteMessage(websocket.TextMessage, []byte(string(webtty.Output)+b64))
 		return err
 	}
 
