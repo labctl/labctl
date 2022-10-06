@@ -52,6 +52,7 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 	mux.HandleFunc(r.Url+"/topo", http_topo)
 	mux.HandleFunc(r.Url+"/vars", http_vars)
 	mux.HandleFunc(r.Url+"/templates", http_templates)
+	mux.HandleFunc(r.Url+"/files", http_lab_files)
 	mux.HandleFunc("/error", http_error)
 
 	frontendServer := frontend.LabctlFileServer(r.Url)
@@ -195,6 +196,16 @@ func http_vars(w http.ResponseWriter, req *http.Request) {
 
 func http_templates(w http.ResponseWriter, req *http.Request) {
 	t, err := helpers.LoadTemplates(Ctx)
+	if err != nil {
+		log.Error(err)
+		json_message(w, err.Error())
+		return
+	}
+	json_response(w, t)
+}
+
+func http_lab_files(w http.ResponseWriter, req *http.Request) {
+	t, err := helpers.LoadFiles(Ctx)
 	if err != nil {
 		log.Error(err)
 		json_message(w, err.Error())
