@@ -5,7 +5,7 @@ package discovery
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"text/template"
 
 	"github.com/labctl/labctl/utils"
@@ -39,7 +39,7 @@ func NewDiscoveryConfig(name string, kind string, dirs ...string) (*DiscoverTemp
 
 // Load a yaml filename with the conversion
 func (c *DiscoverTemplate) Load(filename string) error {
-	yamlFile, err := ioutil.ReadFile(filename)
+	yamlFile, err := os.ReadFile(filename)
 	if err != nil {
 		return err
 	}

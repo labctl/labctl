@@ -1,7 +1,7 @@
 package app
 
 import (
-	"io/ioutil"
+	"os"
 
 	"github.com/labctl/labctl/helpers"
 	"github.com/labctl/labctl/helpers/discovery"
@@ -64,7 +64,7 @@ func DiscoverFile(template, infile string) ([]map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	input, err := ioutil.ReadFile(infile)
+	input, err := os.ReadFile(infile)
 	if err != nil {
 		return nil, err
 	}

@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"path/filepath"
@@ -35,7 +34,7 @@ func WriteYAML(filename string, data interface{}) error {
 	if filename == "" {
 		fmt.Printf("%s\n", out)
 	} else {
-		err := ioutil.WriteFile(filename, out, 0o644)
+		err := os.WriteFile(filename, out, 0o644)
 		if err != nil {
 			return err
 		}
