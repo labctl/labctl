@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -65,7 +64,7 @@ func (u *WsUiData) WriteFile(ctx *Context) {
 		log.Error(err)
 		return
 	}
-	err = ioutil.WriteFile(labfn, data, fm)
+	err = os.WriteFile(labfn, data, fm)
 	if err != nil {
 		log.Error(err)
 	}
@@ -73,7 +72,7 @@ func (u *WsUiData) WriteFile(ctx *Context) {
 
 func (u *WsUiData) ReadFile(ctx *Context) error {
 	labfn, _ := labFileName(ctx.TopoFile)
-	data, err := ioutil.ReadFile(labfn)
+	data, err := os.ReadFile(labfn)
 	if os.IsNotExist(err) {
 		log.Debugf("No labctl file yet: %s", err)
 		return nil

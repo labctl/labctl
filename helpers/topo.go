@@ -9,23 +9,26 @@ import (
 
 	"github.com/srl-labs/containerlab/clab"
 	"github.com/srl-labs/containerlab/clab/config"
-	"github.com/srl-labs/containerlab/nodes"
+
+	// "github.com/srl-labs/containerlab/nodes"
 	"github.com/srl-labs/containerlab/types"
 
 	log "github.com/sirupsen/logrus"
 )
 
 type Topo struct {
-	Name  string
-	Nodes map[string]nodes.Node
-	Links map[int]*types.Link
+	Name string
+	Clab *clab.CLab
+	// Nodes map[string]nodes.Node
+	// Links map[int]*types.Link
 }
 
 func (topo *Topo) Load(topoFile string) error {
 	dl := log.GetLevel()
 	defer log.SetLevel(dl)
 	log.SetLevel(log.InfoLevel)
-	c, err := clab.NewContainerLab(
+	var err error
+	topo.Clab, err = clab.NewContainerLab(
 		clab.WithTimeout(time.Second*30),
 		clab.WithTopoFile(topoFile, ""),
 	)
@@ -34,9 +37,9 @@ func (topo *Topo) Load(topoFile string) error {
 	if err != nil {
 		return err
 	}
-	topo.Links = c.Links
-	topo.Nodes = c.Nodes
-	topo.Name = c.Config.Name
+	// topo.Links = c.Links
+	// topo.Nodes = c.Nodes
+	topo.Name = topo.Clab.Config.Name
 	return nil
 }
 
@@ -59,9 +62,9 @@ type TopoJson struct {
 type Vars map[string]map[string]interface{}
 
 func (topo *Topo) VarsAsJson() (Vars, error) {
-	nc := config.PrepareVars(topo.Nodes, topo.Links)
+	nc := config.PrepareVars(topo.Clab)
 	v := make(Vars)
-	for _, node := range topo.Nodes {
+	for _, node := range topo.Clab.Nodes {
 		name := node.Config().ShortName
 		v[name] = nc[name].Vars
 
@@ -92,7 +95,7 @@ func (topo *Topo) AsJson() (TopoJson, error) {
 		Links: make(map[int]LinkJson, 0),
 	}
 
-	for _, n := range topo.Nodes {
+	for _, n := range topo.Clab.Nodes {
 		nn := n.Config().ShortName
 		res.Nodes[nn] = NodeJson{
 			ContainerDetails: types.ContainerDetails{
@@ -106,7 +109,7 @@ func (topo *Topo) AsJson() (TopoJson, error) {
 			Vars: n.Config().Config.Vars,
 		}
 	}
-	for i, l := range topo.Links {
+	for i, l := range topo.Clab.Links {
 		res.Links[i] = LinkJson{
 			Link: clab.Link{
 				Source:         l.A.Node.ShortName,

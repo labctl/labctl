@@ -12,7 +12,6 @@ import (
 	"github.com/scrapli/scrapligo/response"
 	"github.com/scrapli/scrapligo/util"
 	"github.com/srl-labs/containerlab/clab/config"
-	"github.com/srl-labs/containerlab/nodes"
 	"github.com/srl-labs/containerlab/types"
 
 	log "github.com/sirupsen/logrus"
@@ -81,9 +80,9 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 
 	// Usernames & passwords
 	ssh_user, ssh_pass := "admin", "admin"
-	if v, ok := nodes.GetDefaultCredentialsForKind(st.TargetNode.Kind); ok == nil {
-		ssh_user, ssh_pass = v[0], v[1]
-	}
+	// if v, ok := nodes.GetDefaultCredentialsForKind(st.TargetNode.Kind); ok == nil {
+	// 	ssh_user, ssh_pass = v[0], v[1]
+	// }
 	ssh_user = get(st.Vars, vkSshUser, ssh_user)
 	ssh_pass = get(st.Vars, vkSshPass, ssh_pass)
 

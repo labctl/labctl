@@ -99,12 +99,12 @@ func LoadAndPrep(nodeFilter *[]string, topoFile string, render bool) (map[string
 		return nil, err
 	}
 
-	err = helpers.ValidateNodeFilter(nodeFilter, topo.Nodes)
+	err = helpers.ValidateNodeFilter(nodeFilter, topo.Clab.Nodes)
 	if err != nil {
 		return nil, err
 	}
 
-	configs := config.PrepareVars(topo.Nodes, topo.Links)
+	configs := config.PrepareVars(topo.Clab)
 
 	if render {
 		config.DebugCount = Ctx.DebugCount
