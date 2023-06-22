@@ -10,11 +10,12 @@ import (
 type WsMsgCode string
 
 const (
-	WscError    WsMsgCode = "error"
-	WscWarn     WsMsgCode = "warn"
-	WscTemplate WsMsgCode = "template"
-	WscUiData   WsMsgCode = "uidata"
-	WscConfig   WsMsgCode = "config"
+	WscError    WsMsgCode = "error"    // .Msg
+	WscWarn     WsMsgCode = "warn"     // .Msg
+	WscTemplate WsMsgCode = "template" // .Template
+	WscUiData   WsMsgCode = "uidata"   // .UiData
+	WscConfig   WsMsgCode = "config"   // .Config
+	WscFsChange WsMsgCode = "fschange" // .Msg contains the filename
 )
 
 type WsMessage struct {
@@ -60,7 +61,7 @@ func (w *WsMessage) UnmarshalJson(data []byte) error {
 	return nil
 }
 
-// Implement stringer
+// WsMessage stringer
 func (w *WsMessage) String() string {
 	res, err := json.Marshal(&w)
 	if err != nil {
@@ -71,17 +72,14 @@ func (w *WsMessage) String() string {
 }
 
 func WsErrorf(ws chan<- interface{}, msg string, args ...interface{}) {
-	WsLogf(ws, WscError, msg, args...)
+	ws <- &WsMessage{Code: WscError, Msg: fmt.Sprintf(msg, args...)}
 }
 
 func WsWarnf(ws chan<- interface{}, msg string, args ...interface{}) {
-	WsLogf(ws, WscWarn, msg, args...)
+	ws <- &WsMessage{Code: WscWarn, Msg: fmt.Sprintf(msg, args...)}
 }
 
-func WsLogf(ws chan<- interface{}, code WsMsgCode, msg string, args ...interface{}) {
-	wsmsg := &WsMessage{
-		Code: code,
-		Msg:  fmt.Sprintf(msg, args...),
-	}
-	ws <- wsmsg
+// a FSChange message
+func WsFsChange(msg string) *WsMessage {
+	return &WsMessage{Code: WscFsChange, Msg: msg}
 }

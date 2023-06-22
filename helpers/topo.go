@@ -10,7 +10,6 @@ import (
 	"github.com/srl-labs/containerlab/clab"
 	"github.com/srl-labs/containerlab/clab/config"
 
-	// "github.com/srl-labs/containerlab/nodes"
 	"github.com/srl-labs/containerlab/types"
 
 	log "github.com/sirupsen/logrus"
@@ -54,9 +53,10 @@ type LinkJson struct {
 }
 
 type TopoJson struct {
-	Name  string              `json:"name"`
-	Nodes map[string]NodeJson `json:"nodes,omitempty"`
-	Links map[int]LinkJson    `json:"links,omitempty"`
+	Name   string              `json:"name"`
+	Prefix string              `json:"prefix"`
+	Nodes  map[string]NodeJson `json:"nodes,omitempty"`
+	Links  map[int]LinkJson    `json:"links,omitempty"`
 }
 
 type Vars map[string]map[string]interface{}
@@ -90,9 +90,10 @@ func (topo *Topo) VarsAsJson() (Vars, error) {
 
 func (topo *Topo) AsJson() (TopoJson, error) {
 	res := TopoJson{
-		Name:  topo.Name,
-		Nodes: make(map[string]NodeJson, 0),
-		Links: make(map[int]LinkJson, 0),
+		Name:   topo.Name,
+		Prefix: *topo.Clab.Config.Prefix,
+		Nodes:  make(map[string]NodeJson, 0),
+		Links:  make(map[int]LinkJson, 0),
 	}
 
 	for _, n := range topo.Clab.Nodes {

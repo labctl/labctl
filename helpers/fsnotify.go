@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func WatchFS(ctx *Context) *fsnotify.Watcher {
+func WatchFS(ctx *Context, cb func(string)) *fsnotify.Watcher {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Errorf("Could not watch file changes: %s", err)
@@ -23,7 +23,8 @@ func WatchFS(ctx *Context) *fsnotify.Watcher {
 				}
 				// log.Println("event:", event)
 				if event.Op&fsnotify.Write == fsnotify.Write {
-					log.Println("modified file:", event.Name)
+					// log.Println("modified file:", event.Name)
+					cb(event.Name)
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {

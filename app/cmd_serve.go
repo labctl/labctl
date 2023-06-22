@@ -39,7 +39,10 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 	}
 
 	// Create new FS watcher
-	watcher := helpers.WatchFS(ctx)
+	watcher := helpers.WatchFS(ctx, func(a string) {
+		log.Error(a)
+		wshub.Broadcast(helpers.WsFsChange(a))
+	})
 	defer watcher.Close()
 
 	// Start the web server
@@ -79,6 +82,8 @@ var wsupgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
+var wshub = utils.NewBroadcastChan[interface{}]()
+
 func websock(w http.ResponseWriter, r *http.Request) {
 	wsconn, err := wsupgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -88,6 +93,10 @@ func websock(w http.ResponseWriter, r *http.Request) {
 	defer wsconn.Close()
 
 	ws := helpers.WsChannel(wsconn)
+
+	// Add & remove the ws channel to the hub
+	wshub.Add(ws)
+	defer wshub.Remove(ws)
 
 	// immediately send a UI update
 	helpers.WsWarnf(ws, "websocket connected. version %s", version)
