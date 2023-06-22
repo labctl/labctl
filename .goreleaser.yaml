@@ -20,7 +20,6 @@ dockers:
     image_templates:
       - "ghcr.io/labctl/labctl:latest"
       - 'ghcr.io/labctl/labctl:{{ replace .Version "v" ""}}'
-    dockerfile: goreleaser.dockerfile
 checksum:
   name_template: "checksums.txt"
 snapshot:
