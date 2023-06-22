@@ -10,9 +10,6 @@ RUN apk add --no-cache bash \
 	git \
 	openssh
 
-#COPY labctl_*.apk /tmp/
-#RUN apk add --allow-untrusted /tmp/labctl_*.apk && rm -f /tmp/labctl_*.apk
-
-COPY dist/labctl_linux_amd64_v1/labctl /usr/bin/labctl
+COPY labctl /usr/bin/labctl
 
 CMD ["/usr/bin/labctl"]
