@@ -17,7 +17,9 @@ import (
 
 type Topo struct {
 	Name string
-	Clab *clab.CLab
+	// Issue with the topofile
+	TopoError string
+	Clab      *clab.CLab
 	// Nodes map[string]nodes.Node
 	// Links map[int]*types.Link
 }

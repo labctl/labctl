@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path/filepath"
 
 	"github.com/gorilla/websocket"
 	"github.com/labctl/labctl/helpers"
@@ -24,23 +25,22 @@ type CmdServe struct {
 
 func (r *CmdServe) Run(ctx *helpers.Context) error {
 	var err error
-	r.Topo, err = utils.EnsureTopo(r.Topo)
+	r.Topo, err = ctx.InitPaths(r.Topo, r.TemplatePaths)
 	if err != nil {
 		return err
 	}
 
-	err = ctx.Load(r.Topo)
-	if err != nil {
-		return err
-	}
-	ctx.TemplatePaths, err = helpers.InitTemplatePaths(r.TemplatePaths)
-	if err != nil {
-		return err
-	}
+	_ = ctx.Load()
 
 	// Create new FS watcher
 	watcher := helpers.WatchFS(ctx, func(a string) {
-		log.Error(a)
+		if a == filepath.Base(ctx.TopoFile) {
+			_ = ctx.Load()
+			uim := helpers.WsUiUpdate(Ctx)
+			uim.UiData.Context = ctx.AsJson()
+			wshub.Broadcast(uim)
+			return
+		}
 		wshub.Broadcast(helpers.WsFsChange(a))
 	})
 	defer watcher.Close()
@@ -92,7 +92,7 @@ func websock(w http.ResponseWriter, r *http.Request) {
 	}
 	defer wsconn.Close()
 
-	ws := helpers.WsChannel(wsconn)
+	ws := helpers.WsMakeChannel(wsconn)
 
 	// Add & remove the ws channel to the hub
 	wshub.Add(ws)
@@ -101,7 +101,9 @@ func websock(w http.ResponseWriter, r *http.Request) {
 	// immediately send a UI update
 	helpers.WsWarnf(ws, "websocket connected. version %s", version)
 
-	helpers.WsSendUiUpdate(ws, Ctx)
+	uim := helpers.WsUiUpdate(Ctx)
+	uim.UiData.Context = Ctx.AsJson()
+	ws <- uim
 
 	var wsmsg helpers.WsMessage
 
@@ -214,7 +216,8 @@ func http_templates(w http.ResponseWriter, req *http.Request) {
 }
 
 func http_lab_files(w http.ResponseWriter, req *http.Request) {
-	t, err := helpers.LoadFiles(Ctx)
+	p := utils.Path{Path: filepath.Dir(Ctx.TopoFile)}
+	t, err := p.ReadFiles("*.md")
 	if err != nil {
 		log.Error(err)
 		json_message(w, err.Error())

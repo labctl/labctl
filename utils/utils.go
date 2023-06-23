@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -128,22 +127,4 @@ func CheckRoot() {
 	if os.Getegid() == 0 {
 		log.Warn("You are running as root user.")
 	}
-}
-
-// Try find a local topo file
-func EnsureTopo(topo string) (string, error) {
-	if topo != "" {
-		return topo, nil
-	}
-	files, err := filepath.Glob("*.clab.y*ml")
-	if err != nil {
-		return "", fmt.Errorf("could not find local clab files: %v", err)
-	}
-	if len(files) == 0 {
-		return "", fmt.Errorf("no local topo files")
-	}
-	if len(files) > 1 {
-		return "", fmt.Errorf("multiple topology files found: %v", strings.Join(files, ", "))
-	}
-	return files[0], nil
 }

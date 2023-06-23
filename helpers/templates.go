@@ -1,13 +1,11 @@
 package helpers
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/labctl/labctl/utils"
 	log "github.com/sirupsen/logrus"
-	orderedmap "github.com/wk8/go-ordered-map/v2"
 )
 
 type Template struct {
@@ -40,62 +38,29 @@ func LoadTemplates(ctx *Context) (Templates, error) {
 	res := make(Templates)
 
 	for pp := ctx.TemplatePaths.Oldest(); pp != nil; pp = pp.Next() {
-		log.Warnf("%s", pp.Value)
-		p := filepath.Join(pp.Value, "*.tmpl")
-		files, err := filepath.Glob(p)
+		// log.Warnf("%s", pp.Value)
+		p := utils.Path{Path: pp.Value}
+		lres, err := p.ReadFiles("*.tmpl")
 		if err != nil {
-			return nil, err
+			log.Errorf("Error reading templates in %s: %s", pp.Value, err)
+			continue
 		}
-		for _, fname := range files {
-			_, fn := filepath.Split(fname)
-			t, ok := res[fn]
+		for fname, fcontent := range lres {
+			t, ok := res[fname]
 			if ok {
 				// it exists...
 				t.ShadowP = append(t.ShadowP, t.P)
 				t.P = pp.Key
+				t.Value = fcontent
 			} else {
-				res[fn] = &Template{
-					Name:    fn,
+				res[fname] = &Template{
+					Name:    fname,
 					P:       pp.Key,
 					ShadowP: make([]string, 0),
+					Value:   fcontent,
 				}
 			}
 		}
-	}
-	for _, t := range res {
-		err := t.Load(ctx)
-		if err != nil {
-			return nil, err
-		}
-		// log.Infof("%s --> %d", t.Name, len(t.Value))
-
-	}
-	return res, nil
-}
-
-// Resolve TemplatePaths and return an ordered map with unique ID
-// The unique ID is the key to the map & will be used by the UI
-func InitTemplatePaths(paths []string) (*orderedmap.OrderedMap[string, string], error) {
-	res := orderedmap.New[string, string]()
-	for _, ps := range paths {
-		p := utils.Path{Path: ps}
-		err := p.Resolve()
-		if err != nil {
-			return nil, fmt.Errorf("path %s: %s", ps, err)
-		}
-		n := filepath.Base(p.Path)
-		i := 1
-		pval, ok := res.Get(n)
-		for ok && pval != p.Path { // ensure a unique name & does not already exist
-			tmp := fmt.Sprintf("%s_%d", n, i)
-			pval, ok = res.Get(tmp)
-			if !ok {
-				n = tmp
-			}
-			i++
-		}
-		res.Set(n, p.Path)
-		log.Debugf("--template-path %s [%s]", p.Path, n)
 	}
 	return res, nil
 }

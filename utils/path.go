@@ -127,3 +127,22 @@ func (p *Path) ExpandUser() error {
 	p.Path = filepath.Join(usr.HomeDir, p.Path[1:])
 	return nil
 }
+
+// ReadFile for all files matching a pattern
+func (p *Path) ReadFiles(pattern string) (map[string]string, error) {
+	res := make(map[string]string)
+	glob, err := filepath.Glob(filepath.Join(p.Path, pattern))
+	if err != nil {
+		res["readme.md"] = err.Error()
+		return res, nil
+	}
+	for _, fn := range glob {
+		b, err := os.ReadFile(fn)
+		if err != nil {
+			res[fn+" *"] = err.Error()
+			continue
+		}
+		res[filepath.Base(fn)] = string(b[:])
+	}
+	return res, nil
+}

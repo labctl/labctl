@@ -13,6 +13,8 @@ func NewBroadcastChan[T any]() *BroadcastChan[T] {
 }
 
 func (hub *BroadcastChan[T]) Broadcast(m T) {
+	hub.mu.Lock()
+	defer hub.mu.Unlock()
 	for c := range hub.ch {
 		c <- m
 	}
@@ -20,12 +22,12 @@ func (hub *BroadcastChan[T]) Broadcast(m T) {
 
 func (hub *BroadcastChan[T]) Add(ch chan<- T) {
 	hub.mu.Lock()
-	defer hub.mu.Unlock()
 	hub.ch[ch] = true
+	hub.mu.Unlock()
 }
 
 func (hub *BroadcastChan[T]) Remove(ch chan<- T) {
 	hub.mu.Lock()
-	defer hub.mu.Unlock()
 	delete(hub.ch, ch)
+	hub.mu.Unlock()
 }

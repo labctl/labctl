@@ -31,15 +31,9 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 
 	if strings.HasPrefix(ctx.Command, "config ") {
 		// Executed from the commandline
-		r.Topo, err = utils.EnsureTopo(r.Topo)
-		if err != nil {
-			return err
-		}
-
 		ctx.Command = strings.TrimPrefix(ctx.Command, "config ")
-		ctx.TopoFile = r.Topo
-		// Ensure paths are valid valid
-		ctx.TemplatePaths, err = helpers.InitTemplatePaths(r.TemplatePaths)
+		var err error
+		r.Topo, err = ctx.InitPaths(r.Topo, r.TemplatePaths)
 		if err != nil {
 			return err
 		}

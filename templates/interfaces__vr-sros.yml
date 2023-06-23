@@ -1,22 +1,22 @@
 command: /show router interface
 parse: |
-    Value Required,Key interface (\w\S+)
-    Value admin (Up|Down)
-    Value oper_v4 (\S+)
-    Value oper_v6 (\S+)
-    Value mode (\S+)
-    Value port_sap (\S+)
-    Value List address ((\d+\.|[a-f\d]+:)\S+)
-    Value List pfx_state (\S+)
+  Value Required,Key interface (\w\S+)
+  Value admin (Up|Down)
+  Value oper_v4 (\S+)
+  Value oper_v6 (\S+)
+  Value mode (\S+)
+  Value port_sap (\S+)
+  Value List address ((\d+\.|[a-f\d]+:)\S+)
+  Value List pfx_state (\S+)
 
-    Start
-      ^[|\s]*.*?\s+(Up|Down) -> Continue.Record
-      ^[|\s]*${interface}\s+${admin}\s+${oper_v4}/${oper_v6}\s+${mode}\s+${port_sap}
-      ^[|\s]*${address}\s+${pfx_state}
+  Start
+    ^[|\s]*.*?\s+(Up|Down) -> Continue.Record
+    ^[|\s]*${interface}\s+${admin}\s+${oper_v4}/${oper_v6}\s+${mode}\s+${port_sap}
+    ^[|\s]*${address}\s+${pfx_state}
 output: |
-    {{- range $i, $v := . }}
-    - if: {{ .interface }}
-      ip: {{ index .address 0 }}
-      sap: {{ .port_sap }}
-      i: {{ $i }}
-    {{- end }}
+  {{- range $i, $v := . }}
+  - if: {{ .interface }}
+    ip: {{ index .address 0 }}
+    sap: {{ .port_sap }}
+    i: {{ $i }}
+  {{- end }}

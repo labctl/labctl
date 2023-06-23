@@ -22,6 +22,7 @@ type WsUiData struct {
 	Options   map[string]interface{} `json:"options"`   // A generic options dictionary for persistent UI options
 	Layouts   layouts                `json:"layouts"`   // layouts is a property of v-network-graph
 	Templates map[string]string      `json:"templates"` // Templates used by the UI etc
+	Context   *ContextJson           `json:"context"`   // Context with filename, template paths etc
 }
 
 func NewWsUiData() *WsUiData {
@@ -87,20 +88,19 @@ func (u *WsUiData) ReadFile(ctx *Context) error {
 	return nil
 }
 
-func WsSendUiUpdate(ws chan<- interface{}, ctx *Context) {
+func WsUiUpdate(ctx *Context) *WsMessage {
 	wsmsg := &WsMessage{
 		Code:   WscUiData,
 		UiData: NewWsUiData(),
 	}
 	err := wsmsg.UiData.ReadFile(ctx)
 	if err != nil {
-		WsErrorf(ws, "could not read .labctl.yml")
-		return
+		return &WsMessage{Code: WscError, Msg: "could not read .labctl.yml"}
 	}
-	ws <- wsmsg
+	return wsmsg
 }
 
-func WsChannel(conn *websocket.Conn) chan<- interface{} {
+func WsMakeChannel(conn *websocket.Conn) chan<- interface{} {
 	c := make(chan interface{})
 
 	go func() {
