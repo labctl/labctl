@@ -1,9 +1,7 @@
 package helpers
 
 import (
-	"io/fs"
 	"os"
-	"path"
 
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
@@ -42,22 +40,15 @@ func (u *WsUiData) Print() {
 	// }
 }
 
-// remove extension .clab.yaml
-func labFileName(p string) (string, fs.FileMode) {
-	s, err := os.Lstat(p)
+func (u *WsUiData) WriteFile(ctx *Context) {
+	labfn := ctx.LabctlFilename
+	// Use the clab filemode
+	s, err := os.Lstat(ctx.TopoFile)
 	fm := s.Mode()
 	if err != nil {
-		log.Errorf("Unable to read %s: %s", p, err.Error())
+		log.Errorf("Unable to read %s: %s", ctx.TopoFile, err.Error())
 		fm = 0o664
 	}
-	ext := path.Ext(p)
-	p = p[0 : len(p)-len(ext)]
-	p = p[0 : len(p)-len(path.Ext(p))]
-	return p + ".labctl" + ext, fm
-}
-
-func (u *WsUiData) WriteFile(ctx *Context) {
-	labfn, fm := labFileName(ctx.TopoFile)
 	log.Infof("Saving as %s", labfn)
 
 	data, err := yaml.Marshal(&u)
@@ -72,8 +63,7 @@ func (u *WsUiData) WriteFile(ctx *Context) {
 }
 
 func (u *WsUiData) ReadFile(ctx *Context) error {
-	labfn, _ := labFileName(ctx.TopoFile)
-	data, err := os.ReadFile(labfn)
+	data, err := os.ReadFile(ctx.LabctlFilename)
 	if os.IsNotExist(err) {
 		log.Debugf("No labctl file yet: %s", err)
 		return nil

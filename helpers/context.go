@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"fmt"
+	"path"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -19,8 +20,9 @@ type Context struct {
 	Settings   *Settings
 	Async      bool
 
-	// used by config, serve
-	TopoFile string
+	// Topology filename, used by config, serve
+	TopoFile       string
+	LabctlFilename string
 	// used by config, serve
 	TemplatePaths *orderedmap.OrderedMap[string, string]
 	// used by config
@@ -85,6 +87,9 @@ func (c *Context) InitPaths(topofile string, paths []string) (string, error) {
 	}
 	c.TopoFile = p.Path
 
+	// Init the matching labctl file
+	c.LabctlFilename = labctlFilename(c.TopoFile)
+
 	c.TemplatePaths, err = initTemplatePaths(paths)
 	if err != nil {
 		return "", err
@@ -136,4 +141,12 @@ func initTemplatePaths(paths []string) (*orderedmap.OrderedMap[string, string], 
 		log.Debugf("--template-path %s [%s]", p.Path, n)
 	}
 	return res, nil
+}
+
+// Get the labctl filename & mode matching the topology file (.clab.yaml)
+func labctlFilename(p string) string {
+	ext := path.Ext(p)
+	p = p[0 : len(p)-len(ext)]
+	p = p[0 : len(p)-len(path.Ext(p))]
+	return p + ".labctl" + ext
 }

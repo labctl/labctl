@@ -32,9 +32,12 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 
 	_ = ctx.Load()
 
+	labFilename := filepath.Base(ctx.LabctlFilename)
+
 	// Create new FS watcher
 	watcher := helpers.WatchFS(ctx, func(a string) {
-		if a == filepath.Base(ctx.TopoFile) {
+		// if .clab.yaml or labctl.yaml changes
+		if a == filepath.Base(ctx.TopoFile) || a == labFilename {
 			_ = ctx.Load()
 			uim := helpers.WsUiUpdate(Ctx)
 			uim.UiData.Context = ctx.AsJson()

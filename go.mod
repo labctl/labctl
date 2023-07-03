@@ -20,6 +20,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/sorenisanerd/gotty v1.5.0
 	github.com/srl-labs/containerlab v0.41.2
+	github.com/stretchr/testify v1.8.4
 	github.com/willabides/kongplete v0.3.0
 	github.com/wk8/go-ordered-map/v2 v2.0.0
 	golang.org/x/crypto v0.9.0
@@ -216,6 +217,7 @@ require (
 	github.com/ostreedev/ostree-go v0.0.0-20210805093236-719684c64e4f // indirect
 	github.com/otiai10/copy v1.2.0 // indirect
 	github.com/pkg/sftp v1.13.5 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/pmorjan/kmod v1.1.0 // indirect
 	github.com/proglottis/gpgme v0.1.3 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
