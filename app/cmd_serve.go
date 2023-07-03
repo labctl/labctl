@@ -37,7 +37,7 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 	// Create new FS watcher
 	watcher := helpers.WatchFS(ctx, func(a string) {
 		// if .clab.yaml or labctl.yaml changes
-		if a == filepath.Base(ctx.TopoFile) || a == labFilename {
+		if a == filepath.Base(ctx.TopoFilename) || a == labFilename {
 			_ = ctx.Load()
 			uim := helpers.WsUiUpdate(Ctx)
 			uim.UiData.Context = ctx.AsJson()
@@ -219,7 +219,7 @@ func http_templates(w http.ResponseWriter, req *http.Request) {
 }
 
 func http_lab_files(w http.ResponseWriter, req *http.Request) {
-	p := utils.Path{Path: filepath.Dir(Ctx.TopoFile)}
+	p := utils.Path{Path: filepath.Dir(Ctx.TopoFilename)}
 	t, err := p.ReadFiles("*.md")
 	if err != nil {
 		log.Error(err)

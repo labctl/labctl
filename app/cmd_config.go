@@ -41,7 +41,7 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 		// Executed form a websocket
 		log.Debugf("Websocket %s %v", ctx.Command, ctx)
 		if r.Topo != "" {
-			return fmt.Errorf("--topo/-t not allowed. Fixed at %s", Ctx.TopoFile)
+			return fmt.Errorf("--topo/-t not allowed. Fixed at %s", Ctx.TopoFilename)
 		}
 		if len(r.TemplatePaths) > 0 {
 			return fmt.Errorf(
@@ -61,7 +61,7 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 	config.TemplatePaths = ctx.TemplatePathsSlice()
 	log.Debugf("Search path: %v", config.TemplatePaths)
 
-	configs, err := LoadAndPrep(&ctx.NodeFilter, ctx.TopoFile, ctx.Command != "vars")
+	configs, err := LoadAndPrep(&ctx.NodeFilter, ctx.TopoFilename, ctx.Command != "vars")
 	if err != nil {
 		return err
 	}

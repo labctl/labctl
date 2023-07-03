@@ -13,9 +13,9 @@ func WatchFS(ctx *Context, cb func(string)) *fsnotify.Watcher {
 	if err != nil {
 		log.Errorf("Could not watch file changes: %s", err)
 	}
-	topoDir, err := filepath.Abs(filepath.Dir(ctx.TopoFile))
+	topoDir, err := filepath.Abs(filepath.Dir(ctx.TopoFilename))
 	if err != nil {
-		log.Errorf("Could not start watcher on topo %s: %s", ctx.TopoFile, err)
+		log.Errorf("Could not start watcher on topo %s: %s", ctx.TopoFilename, err)
 		return watcher
 	}
 
@@ -57,7 +57,7 @@ func WatchFS(ctx *Context, cb func(string)) *fsnotify.Watcher {
 	// Add the topofile path
 	err = watcher.Add(topoDir)
 	if err != nil {
-		log.Errorf("Could not watch path %s: %s", filepath.Dir(ctx.TopoFile), err)
+		log.Errorf("Could not watch path %s: %s", filepath.Dir(ctx.TopoFilename), err)
 	}
 	// Add template file paths
 	for p := ctx.TemplatePaths.Oldest(); p != nil; p = p.Next() {

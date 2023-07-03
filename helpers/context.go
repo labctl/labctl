@@ -21,7 +21,7 @@ type Context struct {
 	Async      bool
 
 	// Topology filename, used by config, serve
-	TopoFile       string
+	TopoFilename   string
 	LabctlFilename string
 	// used by config, serve
 	TemplatePaths *orderedmap.OrderedMap[string, string]
@@ -48,14 +48,14 @@ type ContextJson struct {
 func (ctx *Context) AsJson() *ContextJson {
 	return &ContextJson{
 		Command:       ctx.Command,
-		TopoFile:      ctx.TopoFile,
+		TopoFile:      ctx.TopoFilename,
 		TopoError:     ctx.Topo.TopoError,
 		TemplatePaths: ctx.TemplatePathsSlice(),
 	}
 }
 
 func (c *Context) Load() error {
-	err := c.Topo.Load(c.TopoFile)
+	err := c.Topo.Load(c.TopoFilename)
 	if err != nil {
 		c.Topo.TopoError = err.Error()
 	} else {
@@ -76,26 +76,26 @@ func (c *Context) TemplatePathsSlice() []string {
 // Initialize the TopFile and TemplatePaths
 func (c *Context) InitPaths(topofile string, paths []string) (string, error) {
 	var err error
-	c.TopoFile, err = ensureTopo(topofile)
+	c.TopoFilename, err = ensureTopo(topofile)
 	if err != nil {
 		return "", err
 	}
-	p := utils.Path{Path: c.TopoFile}
+	p := utils.Path{Path: c.TopoFilename}
 	err = p.Resolve()
 	if err != nil {
 		log.Fatalf("cannot access topo file %s: %s", topofile, err)
 	}
-	c.TopoFile = p.Path
+	c.TopoFilename = p.Path
 
 	// Init the matching labctl file
-	c.LabctlFilename = labctlFilename(c.TopoFile)
+	c.LabctlFilename = labctlFilename(c.TopoFilename)
 
 	c.TemplatePaths, err = initTemplatePaths(paths)
 	if err != nil {
 		return "", err
 	}
-	log.Debugf("Topo file: %s, Template paths: %s", c.TopoFile, c.TemplatePathsSlice())
-	return c.TopoFile, nil
+	log.Debugf("Topo file: %s, Template paths: %s", c.TopoFilename, c.TemplatePathsSlice())
+	return c.TopoFilename, nil
 }
 
 // Try find a local topo file

@@ -43,10 +43,10 @@ func (u *WsUiData) Print() {
 func (u *WsUiData) WriteFile(ctx *Context) {
 	labfn := ctx.LabctlFilename
 	// Use the clab filemode
-	s, err := os.Lstat(ctx.TopoFile)
+	s, err := os.Lstat(ctx.TopoFilename)
 	fm := s.Mode()
 	if err != nil {
-		log.Errorf("Unable to read %s: %s", ctx.TopoFile, err.Error())
+		log.Errorf("Unable to read %s: %s", ctx.TopoFilename, err.Error())
 		fm = 0o664
 	}
 	log.Infof("Saving as %s", labfn)
