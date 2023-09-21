@@ -24,6 +24,7 @@ require (
 	github.com/willabides/kongplete v0.3.0
 	github.com/wk8/go-ordered-map/v2 v2.0.0
 	golang.org/x/crypto v0.9.0
+	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
 	golang.org/x/term v0.8.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools/v3 v3.4.0
@@ -256,7 +257,6 @@ require (
 	go4.org/intern v0.0.0-20230205224052-192e9f60865c // indirect
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20230204201903-c31fa085b70e // indirect
 	gocloud.dev v0.29.0 // indirect
-	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
 	golang.org/x/mod v0.9.0 // indirect
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/oauth2 v0.6.0 // indirect

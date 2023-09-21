@@ -6,9 +6,9 @@ import (
 	"sync"
 
 	"github.com/labctl/labctl/helpers"
-	"github.com/labctl/labctl/utils"
 	"github.com/labctl/labctl/utils/tx"
 	"github.com/srl-labs/containerlab/clab/config"
+	"golang.org/x/exp/slices"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -23,7 +23,7 @@ func ConfigTx(configs map[string]*config.NodeConfig, ctx *helpers.Context) error
 	}
 	var wg sync.WaitGroup
 	for nn, cfg := range configs {
-		if !utils.Contains(ctx.NodeFilter, nn) {
+		if !slices.Contains(ctx.NodeFilter, nn) {
 			continue
 		}
 		if !ctx.Async {

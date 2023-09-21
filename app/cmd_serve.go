@@ -37,13 +37,15 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 	// Create new FS watcher
 	watcher := helpers.WatchFS(ctx, func(a string) {
 		// if .clab.yaml or labctl.yaml changes
-		if a == filepath.Base(ctx.TopoFilename) || a == labFilename {
+		tf := filepath.Base(ctx.TopoFilename)
+		if a == tf || a == labFilename || a == "."+tf {
 			_ = ctx.Load()
 			uim := helpers.WsUiUpdate(Ctx)
 			uim.UiData.Context = ctx.AsJson()
 			wshub.Broadcast(uim)
 			return
 		}
+		log.Warnf("labfileName %s change %s tf %s", labFilename, a, tf)
 		wshub.Broadcast(helpers.WsFsChange(a))
 	})
 	defer watcher.Close()

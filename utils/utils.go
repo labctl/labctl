@@ -70,16 +70,6 @@ func ArrayMapify(in interface{}) ([]map[string]interface{}, error) {
 	return res, nil
 }
 
-// Does a slice contain a value?
-func Contains[T comparable](elems []T, v T) bool {
-	for _, s := range elems {
-		if v == s {
-			return true
-		}
-	}
-	return false
-}
-
 // Get preferred outbound ip of this machine
 func GetOutboundIP() net.IP {
 	conn, err := net.Dial("udp", "8.8.8.8:80")
@@ -104,11 +94,11 @@ func Partition(s string, sep string) (string, string, string) {
 
 // Removes duplicates from a slice
 func Unique[T comparable](elems []T) []T {
-	inResult := make(map[T]bool)
+	inResult := make(map[T]struct{})
 	var result []T
 	for _, str := range elems {
 		if _, ok := inResult[str]; !ok {
-			inResult[str] = true
+			inResult[str] = struct{}{}
 			result = append(result, str)
 		}
 	}

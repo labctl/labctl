@@ -33,6 +33,8 @@ func Websock(w http.ResponseWriter, r *http.Request) {
 
 	err = handle(context.TODO(), wsconn)
 	if err != nil {
+		b64 := utils.Must(base64.Encode([]byte(err.Error())))
+		_ = wsconn.WriteMessage(websocket.TextMessage, []byte(string(webtty.Output)+b64))
 		log.Error(err.Error())
 	}
 }
@@ -55,9 +57,6 @@ func handle(ctx context.Context, wsconn *websocket.Conn) error {
 
 	cmd, args, err := allow(init.Cmd)
 	if err != nil {
-		// wsconn.WriteMessage(websocket.TextMessage, []byte(string(webtty.UnknownOutput)+"Command not allowed"))
-		b64 := utils.Must(base64.Encode([]byte(err.Error())))
-		_ = wsconn.WriteMessage(websocket.TextMessage, []byte(string(webtty.Output)+b64))
 		return err
 	}
 
@@ -82,5 +81,9 @@ func handle(ctx context.Context, wsconn *websocket.Conn) error {
 		return errors.Wrapf(err, "failed to create webtty")
 	}
 
-	return tty.Run(ctx)
+	err = tty.Run(ctx)
+	if err.Error() == "slave closed" {
+		return nil
+	}
+	return err
 }

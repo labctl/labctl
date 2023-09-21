@@ -9,6 +9,7 @@ import (
 	"github.com/labctl/labctl/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/srl-labs/containerlab/clab/config"
+	"golang.org/x/exp/slices"
 )
 
 type CmdConfig struct {
@@ -71,7 +72,7 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 		return ConfigTx(configs, ctx)
 	case "vars":
 		for nn, cfg := range configs {
-			if !utils.Contains(ctx.NodeFilter, nn) {
+			if !slices.Contains(ctx.NodeFilter, nn) {
 				continue
 			}
 			if ctx.Output.PreferStdout() {
@@ -82,7 +83,7 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 		}
 	case "template":
 		for nn, cfg := range configs {
-			if !utils.Contains(ctx.NodeFilter, nn) {
+			if !slices.Contains(ctx.NodeFilter, nn) {
 				continue
 			}
 			if ctx.Output.PreferStdout() {
