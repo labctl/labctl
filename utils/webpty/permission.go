@@ -5,7 +5,6 @@ import (
 
 	"github.com/google/shlex"
 	"github.com/pkg/errors"
-	"golang.org/x/exp/slices"
 )
 
 // Check if the command is allowed to be executed
@@ -32,15 +31,21 @@ func allow(cmd string) (string, []string, error) {
 	}
 	c := args[0]
 
-	if c == "labctl" && !strings.HasPrefix(cmd, "labctl color ssh ") {
-		return "", nil, errors.New("only 'labctl color ssh <host>' allowed!")
-	}
-
-	is_script := strings.HasPrefix(c, "./scripts/")
-	is_allowed := slices.Contains([]string{"ping", "clab", "labctl"}, c)
-
-	if !(is_allowed || is_script) {
-		return "", nil, errors.Errorf("command not allowed: %s", cmd)
+	switch c {
+	case "labctl":
+		if !strings.HasPrefix(cmd, "labctl color ssh ") {
+			return "", nil, errors.New("only 'labctl color ssh <host>' allowed!")
+		}
+	case "sudo":
+		if !strings.HasPrefix(cmd, "sudo clab ") {
+			return "", nil, errors.New("only 'sudo clab' allowed!")
+		}
+	case "ping":
+		// All allowed!
+	default:
+		if !strings.HasPrefix(c, "./scripts/") {
+			return "", nil, errors.Errorf("command not allowed: %s", cmd)
+		}
 	}
 	return args[0], args[1:], nil
 }
