@@ -51,7 +51,10 @@ func NewConfigTopo(c *clabcore.CLab) ConfigTopo {
 		}
 	}
 	if len(c.Links) == 0 {
-		c.ResolveLinks()
+		err := c.ResolveLinks()
+		if err != nil {
+			log.Error("Could not resolve topofile links", "err", err)
+		}
 		if len(c.Links) == 0 {
 			log.Warn("No links defined in the topology")
 		}
@@ -74,9 +77,9 @@ func NewConfigLink(lnk clablinks.Link) *ConfigLink {
 
 	// casting required until the containerlab interface is fixed to expose the link vars
 	if v, ok := lnk.(*clablinks.LinkVEth); ok {
-		res.Vars = v.LinkCommonParams.Vars
+		res.Vars = v.Vars
 	} else {
-		log.Warnf("Link %s-%s is not a virtual Ethernet link", res.Link.Source, res.Link.Target)
+		log.Warnf("Link %s-%s is not a virtual Ethernet link", res.Source, res.Target)
 	}
 	return res
 }

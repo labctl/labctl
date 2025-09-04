@@ -29,7 +29,7 @@ func (re *Regexp) UnmarshalYAML(unmarshal func(any) error) error {
 
 // implements the yaml.Marshaler interface for Regexp
 func (re *Regexp) MarshalYAML() (any, error) {
-	return re.Regexp.String(), nil
+	return re.String(), nil
 }
 
 // The colorize struct contains a regex to match and the teminal color to replace to

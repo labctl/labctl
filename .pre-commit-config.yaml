@@ -18,9 +18,9 @@ repos:
 
   - repo: local
     hooks:
-      - id: go-fmt
-        name: go-fmt
-        entry: go fmt ./...
+      - id: golangci-lint
+        name: golangci-lint
+        entry: golangci-lint run
         language: system
         pass_filenames: false
 
@@ -30,44 +30,8 @@ repos:
         language: system
         pass_filenames: false
 
-      - id: go-mod-tiidy
+      - id: go-mod-tidy
         name: go-mod-tidy
         entry: go mod tidy
         language: system
         pass_filenames: false
-
-      - id: go-vet
-        name: go-vet
-        entry: go vet ./...
-        language: system
-        pass_filenames: false
-
-  - repo: https://github.com/syntaqx/git-hooks
-    rev: v0.0.18
-    hooks:
-      - id: forbid-binary
-        exclude: ^helpers/frontend/html
-      - id: shfmt
-
-  # - repo: https://github.com/Bahjat/pre-commit-golang
-  #   rev: v1.0.1
-  #   hooks:
-  #     - id:
-  #         gofumpt
-  #         # requires github.com/mvdan/gofumpt
-  #         # $ go install mvdan.cc/gofumpt@latest
-  #     # - id:
-  #     #     go-err-check
-  #     #     # requires github.com/kisielk/errcheck
-  #     #     # $ go install github.com/kisielk/errcheck@latest
-  #     - id:
-  #         go-static-check
-  #         # install https://staticcheck.io/docs/
-  #         # $ go install honnef.co/go/tools/cmd/staticcheck@latest
-  #     # - id:
-  #     #     golangci-lint
-  #     #     # requires github.com/golangci/golangci-lint
-  #     #     # curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
-  #     #     #
-  #     #     # CGO_ENABLED=0  // https://github.com/golangci/golangci-lint/discussions/2215#discussioncomment-1542545
-  #     #   #args: [--config=.github/linters/.golangci.yml] # optional

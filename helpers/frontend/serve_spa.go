@@ -32,6 +32,7 @@ func (spafs SPAFileSystem) index(path, msg string) (http.File, error) {
 func (spafs SPAFileSystem) Open(path string) (http.File, error) {
 	path = strings.TrimPrefix(path, spafs.urlRoot)
 	f, err := spafs.fs.Open(path)
+
 	if err != nil {
 		return spafs.index(path, err.Error())
 	}
@@ -40,7 +41,10 @@ func (spafs SPAFileSystem) Open(path string) (http.File, error) {
 		return spafs.index(path, err.Error())
 	}
 	if info.IsDir() {
-		f.Close()
+		err := f.Close()
+		if err != nil {
+			log.Debug("error closing dir", "err", err)
+		}
 		return spafs.index(path, "isDir()")
 	}
 	log.Debugf("OK '%s'", path)
@@ -82,7 +86,7 @@ type SlashFix struct {
 }
 
 func (h *SlashFix) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	r.URL.Path = strings.Replace(r.URL.Path, "//", "/", -1)
+	r.URL.Path = strings.ReplaceAll(r.URL.Path, "//", "/")
 	r.URL.Path = strings.TrimRight(r.URL.Path, "/")
 	if r.URL.Path == "" {
 		r.URL.Path = "/"

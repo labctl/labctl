@@ -87,7 +87,10 @@ func (u *WsUiData) ReadFile(ctx *Context) error {
 		// migrate to old_command.md
 		ocp := pathlib.NewPath(ctx.LabctlFilename).Parent().Join("old_command.md")
 		cmdss := fmt.Sprintf("%v", cmds)
-		ocp.WriteFile([]byte(cmdss))
+		err := ocp.WriteFile([]byte(cmdss))
+		if err != nil {
+			log.Warn("Could not write old_commend.md", "err", err, "value", cmdss)
+		}
 		delete(u.Options, "commands")
 	}
 	return nil

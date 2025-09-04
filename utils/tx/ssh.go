@@ -131,7 +131,13 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open %s; error: %s (Can you ssh to the node?)", ssh_host, err)
 	}
-	defer d.Close()
+	defer func() {
+		err := d.Close()
+		if err != nil {
+			msg := fmt.Sprintf("Error closing ssh session to %s", ssh_host)
+			log.Warn(msg, "err", err)
+		}
+	}()
 
 	var result []*Response
 

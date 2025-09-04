@@ -28,7 +28,12 @@ func Websock(w http.ResponseWriter, r *http.Request) {
 		log.Print("upgrade:", err)
 		return
 	}
-	defer wsconn.Close()
+	defer func() {
+		err := wsconn.Close()
+		if err != nil {
+			log.Error("Error closing websocket", "err", err)
+		}
+	}()
 
 	err = handle(context.TODO(), wsconn)
 	if err != nil {

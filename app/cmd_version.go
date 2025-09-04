@@ -73,7 +73,13 @@ func _fetchLatestVersion() {
 		return
 	}
 
-	defer res.Body.Close()
+	defer func() {
+		err := res.Body.Close()
+		if err != nil {
+			log.Debug("Error closing request", "err", err)
+		}
+	}()
+
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		versionCh <- fmt.Sprintf("error reading version response: %s", err)

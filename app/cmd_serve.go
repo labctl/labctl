@@ -50,7 +50,12 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 		log.Info("File changed, notify WS", "name", a)
 		wshub.Broadcast(helpers.WsFsChange(a))
 	})
-	defer watcher.Close()
+	defer func() {
+		err := watcher.Close()
+		if err != nil {
+			log.Error("Error closing server", "err", err)
+		}
+	}()
 
 	// Start the web server
 	mux := http.NewServeMux()
@@ -97,7 +102,12 @@ func websock(w http.ResponseWriter, r *http.Request) {
 		log.Print("upgrade:", err)
 		return
 	}
-	defer wsconn.Close()
+	defer func() {
+		err := wsconn.Close()
+		if err != nil {
+			log.Error("Error closing websocket", "err", err)
+		}
+	}()
 
 	ws := helpers.WsMakeChannel(wsconn)
 

@@ -95,18 +95,15 @@ func Spawn(colors []*Colorize, cmd string, args ...string) error {
 var errInvalidWrite = errors.New("invalid write result")
 
 func CopyReplace(dst io.Writer, src io.Reader, regexes []*Colorize) (written int64, err error) {
-	var buf []byte
-	if buf == nil {
-		size := 32 * 1024
-		if l, ok := src.(*io.LimitedReader); ok && int64(size) > l.N {
-			if l.N < 1 {
-				size = 1
-			} else {
-				size = int(l.N)
-			}
+	size := 32 * 1024
+	if l, ok := src.(*io.LimitedReader); ok && int64(size) > l.N {
+		if l.N < 1 {
+			size = 1
+		} else {
+			size = int(l.N)
 		}
-		buf = make([]byte, size)
 	}
+	buf := make([]byte, size)
 	for {
 		nr, er := src.Read(buf)
 		if nr > 0 {

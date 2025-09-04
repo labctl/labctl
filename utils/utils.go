@@ -76,7 +76,12 @@ func GetOutboundIP() net.IP {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer conn.Close()
+	defer func() {
+		err := conn.Close()
+		if err != nil {
+			log.Warn("Error closing socket", "err", err)
+		}
+	}()
 
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 
