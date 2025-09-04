@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/charmbracelet/log"
 )
 
 // The SSH reply, executed command and the prompt
@@ -19,10 +19,11 @@ type Response struct {
 }
 
 // The Slog will include the entire Response
-//   Each field will be prefixed by a character.
-//   # - command sent
-//   | - result received
-//   ? - prompt part of the result
+//
+//	Each field will be prefixed by a character.
+//	# - command sent
+//	| - result received
+//	? - prompt part of the result
 func (r *Response) Slog() string {
 	s := fmt.Sprintf("%s execute '%s'", r.Node, r.Command)
 	if r.Source != "" {

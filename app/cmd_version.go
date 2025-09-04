@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/fatih/color"
 	"github.com/labctl/labctl/helpers"
 	"github.com/labctl/labctl/utils/colorize"
-	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -69,7 +69,7 @@ func _fetchLatestVersion() {
 	client := &http.Client{}
 	res, err := client.Get("https://api.github.com/repos/labctl/labctl/releases/latest")
 	if err != nil || res.StatusCode != 200 {
-		versionCh <- fmt.Sprintf("error occurred during latest version fetch: %v", err)
+		versionCh <- fmt.Sprintf("error occurred during latest version fetch: %v [%d]", err, res.StatusCode)
 		return
 	}
 
@@ -127,7 +127,7 @@ func latestVersion(delay_s time.Duration) (string, error) {
 	case ver, ok := <-versionCh:
 		if ok {
 			if strings.HasPrefix(ver, "error") {
-				return "", fmt.Errorf(ver)
+				return "", fmt.Errorf("%s", ver)
 			}
 			return ver, nil
 		}

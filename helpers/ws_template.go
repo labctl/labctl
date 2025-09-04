@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/log"
 	"github.com/labctl/labctl/utils"
-	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
 // Used by the frontend to request a template to be rendered
 type WsTemplate struct {
-	Id         string                 `json:"id,omitempty"`
-	Name       string                 `json:"name,omitempty"`
-	Template   string                 `json:"template,omitempty"`
-	Vars       map[string]interface{} `json:"vars,omitempty"`
-	Result     string                 `json:"result,omitempty"`
-	ResultYaml map[string]interface{} `json:"resulty,omitempty"`
+	Id         string         `json:"id,omitempty"`
+	Name       string         `json:"name,omitempty"`
+	Template   string         `json:"template,omitempty"`
+	Vars       map[string]any `json:"vars,omitempty"`
+	Result     string         `json:"result,omitempty"`
+	ResultYaml map[string]any `json:"resulty,omitempty"`
 }
 
 // Render the template
@@ -48,7 +48,7 @@ func (t *WsTemplate) Render(ctx *Context) error {
 	t.Result = buf.String()
 
 	// try parse to object
-	t.ResultYaml = make(map[string]interface{})
+	t.ResultYaml = make(map[string]any)
 	err = yaml.Unmarshal([]byte(t.Result), t.ResultYaml)
 	if err != nil {
 		log.Errorf("%s", t.Result)

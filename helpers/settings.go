@@ -7,13 +7,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/imdario/mergo"
+	"dario.cat/mergo"
 	"github.com/labctl/labctl/utils"
 	"github.com/labctl/labctl/utils/colorize"
 	"github.com/labctl/labctl/utils/tx"
 	"gopkg.in/yaml.v3"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/charmbracelet/log"
 )
 
 type Settings struct {
@@ -51,9 +51,12 @@ func (s *Settings) AddSettings(path string, silent bool) error {
 }
 
 func (s *Settings) load(path string, silent bool) error {
-	p := utils.Path{Path: path}
-	_ = p.ExpandUser()
-	setByte, err := os.ReadFile(p.Path)
+	p, err := utils.NewPathExpandUser(path)
+	if err != nil {
+		log.Error("could not load file", "name", p.String(), "err", err)
+		return err
+	}
+	setByte, err := p.ReadFile()
 	if err != nil {
 		if silent && errors.Is(err, os.ErrNotExist) {
 			return nil
@@ -63,8 +66,8 @@ func (s *Settings) load(path string, silent bool) error {
 	return s.unmarshal(setByte)
 }
 
-func (s *Settings) unmarshal(b []byte) error {
-	err := yaml.Unmarshal(b, &s)
+func (s *Settings) unmarshal(bb []byte) error {
+	err := yaml.Unmarshal(bb, &s)
 	if err != nil {
 		if strings.Contains(err.Error(), "unknown escape") {
 			err = fmt.Errorf("%s (regex requires single quote escape characters '')", err)

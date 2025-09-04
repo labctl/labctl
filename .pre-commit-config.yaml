@@ -1,50 +1,73 @@
 repos:
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.1.0
-    hooks:
-      - id: codespell
-        args:
-          - -L
-          - ASend,asend
-          - --skip
-          - "*.sum,*.mod"
-        exclude: ^helpers/frontend/html
+
+  # - repo: https://github.com/codespell-project/codespell
+  #   rev: v2.1.0
+  #   hooks:
+  #     - id: codespell
+  #       args:
+  #         - -L
+  #         - ASend,asend
+  #         - --skip
+  #         - "*.sum,*.mod"
+  #       exclude: ^helpers/frontend/html
         # exclude: >
         #   (?x)^(
         #       .*/assets/.*
         #       go.(sum|mod)
         #   )$
 
+  - repo: local
+    hooks:
+      - id: go-fmt
+        name: go-fmt
+        entry: go fmt ./...
+        language: system
+        pass_filenames: false
+
+      - id: go-test
+        name: go-test
+        entry: go test ./...
+        language: system
+        pass_filenames: false
+
+      - id: go-mod-tiidy
+        name: go-mod-tidy
+        entry: go mod tidy
+        language: system
+        pass_filenames: false
+
+      - id: go-vet
+        name: go-vet
+        entry: go vet ./...
+        language: system
+        pass_filenames: false
+
   - repo: https://github.com/syntaqx/git-hooks
-    rev: v0.0.17
+    rev: v0.0.18
     hooks:
       - id: forbid-binary
         exclude: ^helpers/frontend/html
-      - id: go-fmt
-      - id: go-test
-      - id: go-mod-tidy
       - id: shfmt
 
-  - repo: https://github.com/Bahjat/pre-commit-golang
-    rev: v1.0.1
-    hooks:
-      - id: go-vet
-      - id:
-          gofumpt
-          # requires github.com/mvdan/gofumpt
-          # $ go install mvdan.cc/gofumpt@latest
-      # - id:
-      #     go-err-check
-      #     # requires github.com/kisielk/errcheck
-      #     # $ go install github.com/kisielk/errcheck@latest
-      - id:
-          go-static-check
-          # install https://staticcheck.io/docs/
-          # $ go install honnef.co/go/tools/cmd/staticcheck@latest
-      # - id:
-      #     golangci-lint
-      #     # requires github.com/golangci/golangci-lint
-      #     # curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
-      #     #
-      #     # CGO_ENABLED=0  // https://github.com/golangci/golangci-lint/discussions/2215#discussioncomment-1542545
-      #   #args: [--config=.github/linters/.golangci.yml] # optional
+  # - repo: https://github.com/Bahjat/pre-commit-golang
+  #   rev: v1.0.1
+  #   hooks:
+  #     - id:
+  #         gofumpt
+  #         # requires github.com/mvdan/gofumpt
+  #         # $ go install mvdan.cc/gofumpt@latest
+  #     # - id:
+  #     #     go-err-check
+  #     #     # requires github.com/kisielk/errcheck
+  #     #     # $ go install github.com/kisielk/errcheck@latest
+  #     - id:
+  #         go-static-check
+  #         # install https://staticcheck.io/docs/
+  #         # $ go install honnef.co/go/tools/cmd/staticcheck@latest
+  #     # - id:
+  #     #     golangci-lint
+  #     #     # requires github.com/golangci/golangci-lint
+  #     #     # curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
+  #     #     #
+  #     #     # CGO_ENABLED=0  // https://github.com/golangci/golangci-lint/discussions/2215#discussioncomment-1542545
+  #     #   #args: [--config=.github/linters/.golangci.yml] # optional

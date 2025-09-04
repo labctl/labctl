@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/log"
 	"github.com/fatih/color"
-	log "github.com/sirupsen/logrus"
 )
 
 func center(s string, w int) string {

@@ -11,7 +11,7 @@ import (
 	"github.com/creack/pty"
 	"golang.org/x/term"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/charmbracelet/log"
 )
 
 func Spawn(colors []*Colorize, cmd string, args ...string) error {

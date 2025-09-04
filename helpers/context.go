@@ -7,9 +7,10 @@ import (
 	"strings"
 	"text/template"
 
-	log "github.com/sirupsen/logrus"
-
+	"github.com/charmbracelet/log"
 	"github.com/labctl/labctl/utils"
+
+	clabcore "github.com/srl-labs/containerlab/core"
 	orderedmap "github.com/wk8/go-ordered-map/v2"
 )
 
@@ -30,7 +31,8 @@ type Context struct {
 	// Used by config
 	NodeFilter []string
 
-	Topo Topo
+	Clab      *clabcore.CLab
+	TopoError string
 
 	Template *template.Template
 
@@ -47,19 +49,18 @@ type ContextJson struct {
 
 func (ctx *Context) AsJson() *ContextJson {
 	return &ContextJson{
-		Command:       ctx.Command,
+		// Command:       ctx.Command,
 		TopoFile:      ctx.TopoFilename,
-		TopoError:     ctx.Topo.TopoError,
+		TopoError:     ctx.TopoError,
 		TemplatePaths: ctx.TemplatePathsSlice(),
 	}
 }
 
 func (c *Context) Load() error {
-	err := c.Topo.Load(c.TopoFilename)
+	var err error
+	c.Clab, err = LoadTopo(c.TopoFilename)
 	if err != nil {
-		c.Topo.TopoError = err.Error()
-	} else {
-		c.Topo.TopoError = ""
+		c.TopoError = err.Error()
 	}
 	return err
 }
@@ -80,12 +81,11 @@ func (c *Context) InitPaths(topofile string, paths []string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	p := utils.Path{Path: c.TopoFilename}
-	err = p.Resolve()
+	p, err := utils.NewPathExpandUser(c.TopoFilename)
 	if err != nil {
 		log.Fatalf("cannot access topo file %s: %s", topofile, err)
 	}
-	c.TopoFilename = p.Path
+	c.TopoFilename = p.String()
 
 	// Init the matching labctl file
 	c.LabctlFilename = labctlFilename(c.TopoFilename)
@@ -121,24 +121,24 @@ func ensureTopo(topo string) (string, error) {
 func initTemplatePaths(paths []string) (*orderedmap.OrderedMap[string, string], error) {
 	res := orderedmap.New[string, string]()
 	for _, ps := range paths {
-		p := utils.Path{Path: ps}
-		err := p.Resolve()
+		p, err := utils.NewPathExpandUser(ps)
 		if err != nil {
 			return nil, fmt.Errorf("path %s: %s", ps, err)
 		}
-		n := filepath.Base(p.Path)
+		n := filepath.Base(p.Name())
 		i := 1
-		pval, ok := res.Get(n)
-		for ok && pval != p.Path { // ensure a unique name & does not already exist
+		pval, found := res.Get(n)
+		// ensure a unique name & does not already exist
+		for found && pval != p.String() {
 			tmp := fmt.Sprintf("%s_%d", n, i)
-			pval, ok = res.Get(tmp)
-			if !ok {
+			pval, found = res.Get(tmp)
+			if !found {
 				n = tmp
 			}
 			i++
 		}
-		res.Set(n, p.Path)
-		log.Debugf("--template-path %s [%s]", p.Path, n)
+		res.Set(n, p.String())
+		log.Debugf("--template-path %s [%s]", p.String(), n)
 	}
 	return res, nil
 }

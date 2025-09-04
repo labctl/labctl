@@ -1,19 +1,22 @@
 package utils
 
 import (
-	"context"
+	"maps"
 	"text/template"
 
-	"github.com/hairyhenderson/gomplate/v3"
-	gomData "github.com/hairyhenderson/gomplate/v3/data"
 	jT "github.com/kellerza/template"
+	clabutils "github.com/srl-labs/containerlab/utils"
 )
 
+func AllFuncs() template.FuncMap {
+	res := clabutils.CreateFuncs()
+	maps.Copy(res, jT.Funcs)
+	// log.Infof("Loaded %d template functions: %v", len(res), res)
+	return res
+}
+
 func NewTemplate() *template.Template {
-	// gomplate overrides the built-in *slice* function. You can still use *coll.Slice*
-	gfuncs := gomplate.CreateFuncs(context.Background(), new(gomData.Data))
-	delete(gfuncs, "slice")
-	return template.New("").Funcs(gfuncs).Funcs(jT.Funcs)
+	return template.New("").Funcs(AllFuncs())
 }
 
 func ParseTemplates(temps map[string]string) (*template.Template, error) {

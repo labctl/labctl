@@ -2,17 +2,16 @@ package webpty
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"github.com/hairyhenderson/gomplate/v3/base64"
-	"github.com/labctl/labctl/utils"
 	"github.com/pkg/errors"
 	"github.com/sorenisanerd/gotty/backend/localcommand"
 	"github.com/sorenisanerd/gotty/webtty"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/charmbracelet/log"
 )
 
 type InitMessage struct {
@@ -33,7 +32,7 @@ func Websock(w http.ResponseWriter, r *http.Request) {
 
 	err = handle(context.TODO(), wsconn)
 	if err != nil {
-		b64 := utils.Must(base64.Encode([]byte(err.Error())))
+		b64 := base64.StdEncoding.EncodeToString([]byte(err.Error()))
 		_ = wsconn.WriteMessage(websocket.TextMessage, []byte(string(webtty.Output)+b64))
 		log.Error(err.Error())
 	}
@@ -69,7 +68,7 @@ func handle(ctx context.Context, wsconn *websocket.Conn) error {
 	}
 
 	var slave webtty.Slave
-	slave, err = localcommand.New(cmd, args)
+	slave, err = localcommand.New(cmd, args, map[string][]string{})
 
 	if err != nil {
 		return errors.Wrapf(err, "failed to create backend")

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/charmbracelet/log"
 )
 
 // FileSystem custom file system handler
@@ -51,6 +51,7 @@ func (spafs SPAFileSystem) Open(path string) (http.File, error) {
 }
 
 // Embed static web app. Ensure we have index.html
+//
 //go:embed html/index.html
 //go:embed html/*
 var labctlHtml embed.FS

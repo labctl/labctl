@@ -7,12 +7,12 @@ import (
 	"reflect"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/charmbracelet/log"
 	"gopkg.in/yaml.v3"
 )
 
 // Log yaml data with optional message
-func LogYAML(data interface{}, msg ...string) {
+func LogYAML(data any, msg ...string) {
 	outp, err := yaml.Marshal(data)
 	if err != nil {
 		log.Errorf("error: %v", err)
@@ -25,7 +25,7 @@ func LogYAML(data interface{}, msg ...string) {
 }
 
 // Write YAML to a file (or stdout if no filename)
-func WriteYAML(filename string, data interface{}) error {
+func WriteYAML(filename string, data any) error {
 	out, err := yaml.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("invalid result: %v", err)
@@ -43,27 +43,27 @@ func WriteYAML(filename string, data interface{}) error {
 }
 
 // Ensure the input is a valid 'dict'
-func Mapify(i interface{}) (map[string]interface{}, bool) {
+func Mapify(i any) (map[string]any, bool) {
 	value := reflect.ValueOf(i)
 	if value.Kind() == reflect.Map {
-		m := map[string]interface{}{}
+		m := map[string]any{}
 		for _, k := range value.MapKeys() {
 			m[fmt.Sprintf("%v", k)] = value.MapIndex(k).Interface()
 		}
 		return m, true
 	}
-	return map[string]interface{}{}, false
+	return map[string]any{}, false
 }
 
 // Ensure the input is an array of 'dicts'
-func ArrayMapify(in interface{}) ([]map[string]interface{}, error) {
-	res := []map[string]interface{}{}
+func ArrayMapify(in any) ([]map[string]any, error) {
+	res := []map[string]any{}
 	items := reflect.ValueOf(in)
 	for i := 0; i < items.Len(); i++ {
 		item := items.Index(i).Interface()
 		mapitem, ok := Mapify(item)
 		if !ok {
-			return nil, fmt.Errorf("expected a dictionary like map[string]interface{}, not %v", item)
+			return nil, fmt.Errorf("expected a dictionary like map[string]any, not %v", item)
 		}
 		res = append(res, mapitem)
 	}
@@ -107,7 +107,7 @@ func Unique[T comparable](elems []T) []T {
 
 func Must[T comparable](v T, err error) T {
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
 	return v
 }

@@ -1,16 +1,16 @@
 package helpers
 
 import (
+	"github.com/labctl/labctl/core/config"
 	"github.com/labctl/labctl/utils/colorize"
 	"github.com/labctl/labctl/utils/tx"
-	"github.com/srl-labs/containerlab/clab/config"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/charmbracelet/log"
 )
 
-type OutputAsLog interface{}
+type OutputAsLog any
 
-type OutputAsJson interface{}
+type OutputAsJson any
 
 type ResultOutput interface {
 	LogResponses([]*tx.Response, *config.NodeConfig)
@@ -42,7 +42,7 @@ func (l *LogOutput) PreferStdout() bool {
 
 // Implements ResultOutput
 type WebSocketOutput struct {
-	Ws chan<- interface{}
+	Ws chan<- any
 }
 
 func (ws *WebSocketOutput) Info(node string, msg string) {

@@ -7,66 +7,35 @@ import (
 	"os"
 	"time"
 
-	"github.com/srl-labs/containerlab/clab"
-	"github.com/srl-labs/containerlab/clab/config"
+	"github.com/labctl/labctl/core/config"
+	clabcore "github.com/srl-labs/containerlab/core"
 
-	"github.com/srl-labs/containerlab/types"
-
-	log "github.com/sirupsen/logrus"
+	"github.com/charmbracelet/log"
 )
 
-type Topo struct {
-	Name string
-	// Issue with the topofile
-	TopoError string
-	Clab      *clab.CLab
-	// Nodes map[string]nodes.Node
-	// Links map[int]*types.Link
-}
-
-func (topo *Topo) Load(topoFile string) error {
+func LoadTopo(topoFile string) (*clabcore.CLab, error) {
 	dl := log.GetLevel()
 	defer log.SetLevel(dl)
 	log.SetLevel(log.InfoLevel)
-	var err error
-	topo.Clab, err = clab.NewContainerLab(
-		clab.WithTimeout(time.Second*30),
-		clab.WithTopoFile(topoFile, ""),
+	c, err := clabcore.NewContainerLab(
+		clabcore.WithTimeout(time.Second*30),
+		clabcore.WithTopoPath(topoFile, ""),
 	)
 	log.SetLevel(dl)
-	log.Debugf("Loaded %s", topoFile)
 	if err != nil {
-		return err
+		log.Errorf("failed to create containerlab instance: %v", err)
+		return nil, err
 	}
-	// topo.Links = c.Links
-	// topo.Nodes = c.Nodes
-	topo.Name = topo.Clab.Config.Name
-	return nil
+	log.Debugf("Loaded %s", topoFile)
+	return c, nil
 }
 
-type NodeJson struct {
-	types.ContainerDetails
-	Vars map[string]interface{} `json:"vars,omitempty"`
-}
+type Vars map[string]map[string]any
 
-type LinkJson struct {
-	clab.Link
-	Vars map[string]interface{} `json:"vars,omitempty"`
-}
-
-type TopoJson struct {
-	Name   string              `json:"name"`
-	Prefix string              `json:"prefix"`
-	Nodes  map[string]NodeJson `json:"nodes,omitempty"`
-	Links  map[int]LinkJson    `json:"links,omitempty"`
-}
-
-type Vars map[string]map[string]interface{}
-
-func (topo *Topo) VarsAsJson() (Vars, error) {
-	nc := config.PrepareVars(topo.Clab)
+func PrepareVarsAsJson(c *clabcore.CLab) (Vars, error) {
+	nc := config.PrepareVars(c)
 	v := make(Vars)
-	for _, node := range topo.Clab.Nodes {
+	for _, node := range c.Nodes {
 		name := node.Config().ShortName
 		v[name] = nc[name].Vars
 
@@ -90,46 +59,8 @@ func (topo *Topo) VarsAsJson() (Vars, error) {
 	return v, nil
 }
 
-func (topo *Topo) AsJson() (TopoJson, error) {
-	res := TopoJson{
-		Name:   topo.Name,
-		Prefix: *topo.Clab.Config.Prefix,
-		Nodes:  make(map[string]NodeJson, 0),
-		Links:  make(map[int]LinkJson, 0),
-	}
-
-	for _, n := range topo.Clab.Nodes {
-		nn := n.Config().ShortName
-		res.Nodes[nn] = NodeJson{
-			ContainerDetails: types.ContainerDetails{
-				Name:        nn,
-				Kind:        n.Config().Kind,
-				Image:       n.Config().Image,
-				Group:       n.Config().Group,
-				IPv4Address: n.Config().MgmtIPv4Address,
-				IPv6Address: n.Config().MgmtIPv6Address,
-			},
-			Vars: n.Config().Config.Vars,
-		}
-	}
-	for i, l := range topo.Clab.Links {
-		res.Links[i] = LinkJson{
-			Link: clab.Link{
-				Source:         l.A.Node.ShortName,
-				SourceEndpoint: l.A.EndpointName,
-				Target:         l.B.Node.ShortName,
-				TargetEndpoint: l.B.EndpointName,
-			},
-			Vars: l.Vars,
-		}
-	}
-
-	return res, nil
-}
-
-func (topo *Topo) Print() error {
-	// j, err := topo.AsJson()
-	j, err := topo.VarsAsJson()
+func PrintPreparedVars(c *clabcore.CLab) error {
+	j, err := PrepareVarsAsJson(c)
 	if err != nil {
 		return err
 	}

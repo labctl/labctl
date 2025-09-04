@@ -14,7 +14,7 @@ type Regexp struct {
 }
 
 // implements the yaml.Unmarshaler interface for Regexp
-func (re *Regexp) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (re *Regexp) UnmarshalYAML(unmarshal func(any) error) error {
 	var s string
 	if err := unmarshal(&s); err != nil {
 		return err
@@ -28,7 +28,7 @@ func (re *Regexp) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 // implements the yaml.Marshaler interface for Regexp
-func (re *Regexp) MarshalYAML() (interface{}, error) {
+func (re *Regexp) MarshalYAML() (any, error) {
 	return re.Regexp.String(), nil
 }
 

@@ -6,13 +6,15 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"github.com/charmbracelet/log"
+	"github.com/chigopher/pathlib"
 	"github.com/gorilla/websocket"
+	"github.com/labctl/labctl/core/config"
 	"github.com/labctl/labctl/helpers"
 	"github.com/labctl/labctl/helpers/frontend"
 	"github.com/labctl/labctl/utils"
 	"github.com/labctl/labctl/utils/webpty"
 	"github.com/rs/cors"
-	log "github.com/sirupsen/logrus"
 )
 
 type CmdServe struct {
@@ -45,7 +47,7 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 			wshub.Broadcast(uim)
 			return
 		}
-		log.Warnf("labfileName %s change %s tf %s", labFilename, a, tf)
+		log.Info("File changed, notify WS", "name", a)
 		wshub.Broadcast(helpers.WsFsChange(a))
 	})
 	defer watcher.Close()
@@ -87,7 +89,7 @@ var wsupgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
-var wshub = utils.NewBroadcastChan[interface{}]()
+var wshub = utils.NewBroadcastChan[any]()
 
 func websock(w http.ResponseWriter, r *http.Request) {
 	wsconn, err := wsupgrader.Upgrade(w, r, nil)
@@ -115,7 +117,7 @@ func websock(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, message, err := wsconn.ReadMessage()
 		if err != nil {
-			log.Println("read:", err)
+			log.Printf("read: %s\n", err)
 			break
 		}
 
@@ -141,14 +143,14 @@ func websock(w http.ResponseWriter, r *http.Request) {
 		case helpers.WscTemplate: // render template
 			err := wsmsg.Template.Render(Ctx)
 			if err != nil {
-				helpers.WsWarnf(ws, err.Error())
+				helpers.WsWarnf(ws, "%s", err.Error())
 				continue
 			}
 			wsmsg.Template.ClearInput()
 			ws <- wsmsg
-			if err != nil {
-				log.Errorf("could not write to the websocket: %s", err)
-			}
+			// if err != nil {
+			// 	log.Errorf("could not write to the websocket: %s", err)
+			// }
 
 		case helpers.WscConfig: // run the config command
 			go RunWebConfig(ws, wsmsg.Config.Cmd)
@@ -160,12 +162,12 @@ func websock(w http.ResponseWriter, r *http.Request) {
 }
 
 type jsonResponse struct {
-	Ok      bool        `json:"ok"`
-	Message string      `json:"msg,omitempty"`
-	Data    interface{} `json:"data"`
+	Ok      bool   `json:"ok"`
+	Message string `json:"msg,omitempty"`
+	Data    any    `json:"data"`
 }
 
-func json_response(w http.ResponseWriter, j interface{}) {
+func json_response(w http.ResponseWriter, j any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	err := json.NewEncoder(w).Encode(jsonResponse{
@@ -191,17 +193,18 @@ func json_message(w http.ResponseWriter, message string, ok ...bool) {
 }
 
 func http_topo(w http.ResponseWriter, req *http.Request) {
-	j, err := Ctx.Topo.AsJson()
-	if err != nil {
-		log.Error(err)
-		json_message(w, err.Error())
-		return
-	}
+	j := config.NewConfigTopo(Ctx.Clab)
+	// Ctx.Topo.AsJson()
+	// if err != nil {
+	// 	log.Error(err)
+	// 	json_message(w, err.Error())
+	// 	return
+	// }
 	json_response(w, j)
 }
 
 func http_vars(w http.ResponseWriter, req *http.Request) {
-	j, err := Ctx.Topo.VarsAsJson()
+	j, err := helpers.PrepareVarsAsJson(Ctx.Clab)
 	if err != nil {
 		log.Error(err)
 		json_message(w, err.Error())
@@ -221,8 +224,8 @@ func http_templates(w http.ResponseWriter, req *http.Request) {
 }
 
 func http_lab_files(w http.ResponseWriter, req *http.Request) {
-	p := utils.Path{Path: filepath.Dir(Ctx.TopoFilename)}
-	t, err := p.ReadFiles("*.md")
+	p := pathlib.NewPath(Ctx.TopoFilename).Parent()
+	t, err := utils.ReadFiles(p, "*.md")
 	if err != nil {
 		log.Error(err)
 		json_message(w, err.Error())

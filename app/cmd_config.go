@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/log"
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/shlex"
 	"github.com/labctl/labctl/helpers"
 	"github.com/labctl/labctl/utils"
-	log "github.com/sirupsen/logrus"
-	"github.com/srl-labs/containerlab/clab/config"
 	"golang.org/x/exp/slices"
 )
 
@@ -44,7 +44,7 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 		if r.Topo != "" {
 			return fmt.Errorf("--topo/-t not allowed. Fixed at %s", Ctx.TopoFilename)
 		}
-		if len(r.TemplatePaths) > 0 {
+		if len(r.TemplatePaths) > 0 && !cmp.Equal(r.TemplatePaths, Ctx.TemplatePathsSlice()) {
 			return fmt.Errorf(
 				"--template-paths/-p not allowed. Fixed at %s",
 				strings.Join(Ctx.TemplatePathsSlice(), ", "),
@@ -57,12 +57,7 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 
 	ctx.NodeFilter = r.Filter
 
-	// Setup containerlab's config engine
-	config.TemplateNames = r.TemplateList
-	config.TemplatePaths = ctx.TemplatePathsSlice()
-	log.Debugf("Search path: %v", config.TemplatePaths)
-
-	configs, err := LoadAndPrep(&ctx.NodeFilter, ctx.TopoFilename, ctx.Command != "vars")
+	configs, err := LoadAndPrep(&ctx.NodeFilter, ctx.TopoFilename, ctx.Command != "vars", r.TemplateList, ctx.TemplatePathsSlice())
 	if err != nil {
 		return err
 	}
@@ -98,14 +93,14 @@ func (r *CmdConfig) Run(ctx *helpers.Context) error {
 	return nil
 }
 
-func WebConfigDone(ws chan<- interface{}, retry int) {
+func WebConfigDone(ws chan<- any, retry int) {
 	ws <- &helpers.WsMessage{
 		Code:   helpers.WscConfig,
 		Config: &helpers.WsConfig{Cmd: "done"},
 	}
 }
 
-func RunWebConfig(ws chan<- interface{}, cmd string) {
+func RunWebConfig(ws chan<- any, cmd string) {
 	defer WebConfigDone(ws, 3)
 
 	args, err := shlex.Split(cmd)
@@ -133,7 +128,7 @@ func RunWebConfig(ws chan<- interface{}, cmd string) {
 
 	err = kctx.Run(nctx)
 	if err != nil {
-		helpers.WsErrorf(ws, err.Error())
+		helpers.WsErrorf(ws, "%s", err.Error())
 		return
 	}
 }

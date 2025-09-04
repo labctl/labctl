@@ -5,12 +5,12 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/labctl/labctl/core/config"
 	"github.com/labctl/labctl/helpers"
 	"github.com/labctl/labctl/utils/tx"
-	"github.com/srl-labs/containerlab/clab/config"
 	"golang.org/x/exp/slices"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/charmbracelet/log"
 )
 
 // Send commands or commit/compare configuration to a single node
@@ -92,25 +92,24 @@ func ConfigTx1(c *config.NodeConfig, action tx.Action) ([]*tx.Response, error) {
 }
 
 // Load the topo files and prepare the variables
-func LoadAndPrep(nodeFilter *[]string, topoFile string, render bool) (map[string]*config.NodeConfig, error) {
-	var topo helpers.Topo
-	err := topo.Load(topoFile)
+func LoadAndPrep(nodeFilter *[]string, topoFile string, render bool, templateList []string, templatePaths []string) (map[string]*config.NodeConfig, error) {
+	c, err := helpers.LoadTopo(topoFile)
 	if err != nil {
 		return nil, err
 	}
 
-	err = helpers.ValidateNodeFilter(nodeFilter, topo.Clab.Nodes)
+	err = helpers.ValidateNodeFilter(nodeFilter, c.Nodes)
 	if err != nil {
 		return nil, err
 	}
 
-	configs := config.PrepareVars(topo.Clab)
+	configs := config.PrepareVars(c)
 
 	if render {
 		config.DebugCount = Ctx.DebugCount
 
 		// Call containerlab's render
-		err = config.RenderAll(configs)
+		err = config.RenderAll(configs, templateList, templatePaths)
 		if err != nil {
 			return nil, err
 		}

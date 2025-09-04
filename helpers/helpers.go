@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/srl-labs/containerlab/nodes"
+	clabnodes "github.com/srl-labs/containerlab/nodes"
 )
 
 // Debug Level
@@ -12,7 +12,7 @@ var DebugCount int
 
 // Ensure the NodeFilter contains valid nodes
 // If empty, ensure it contains ALL the nodes
-func ValidateNodeFilter(NodeFilter *[]string, nodes map[string]nodes.Node) error {
+func ValidateNodeFilter(NodeFilter *[]string, nodes map[string]clabnodes.Node) error {
 	if len(*NodeFilter) == 0 {
 		for n := range nodes {
 			*NodeFilter = append(*NodeFilter, n)

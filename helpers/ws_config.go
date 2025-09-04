@@ -1,8 +1,8 @@
 package helpers
 
 import (
+	"github.com/labctl/labctl/core/config"
 	"github.com/labctl/labctl/utils/tx"
-	"github.com/srl-labs/containerlab/clab/config"
 )
 
 type WsConfig struct {

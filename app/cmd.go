@@ -10,7 +10,7 @@ import (
 	"github.com/posener/complete"
 	"github.com/willabides/kongplete"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/charmbracelet/log"
 )
 
 var cli struct {
@@ -25,7 +25,7 @@ var cli struct {
 	Version            CmdVersion                   `cmd:"" help:"show the labctl version"`
 }
 
-func GetCmdLineParser(ast interface{}) *kong.Kong {
+func GetCmdLineParser(ast any) *kong.Kong {
 	return kong.Must(ast,
 		kong.Name("labctl"),
 		kong.Description("Control your network lab."),
@@ -33,7 +33,9 @@ func GetCmdLineParser(ast interface{}) *kong.Kong {
 		kong.ConfigureHelp(kong.HelpOptions{
 			Compact: true,
 			Summary: false,
-		}))
+		}),
+		kong.Configuration(kong.JSON, "~/.labctl.json", ".labctl.json"),
+	)
 }
 
 // App wide context
@@ -47,6 +49,11 @@ func Main() {
 		kongplete.WithPredictor("topo", complete.PredictFiles("*.clab.y*ml")),
 		kongplete.WithPredictor("dir", complete.PredictDirs("*")),
 	)
+
+	_, err := parser.LoadConfig(".labctl.json")
+	if err != nil {
+		log.Errorf("failed to load config: %v", err)
+	}
 
 	kctx, err := parser.Parse(os.Args[1:])
 	parser.FatalIfErrorf(err)

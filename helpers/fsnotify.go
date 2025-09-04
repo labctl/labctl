@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/fsnotify/fsnotify"
-	log "github.com/sirupsen/logrus"
 )
 
 func WatchFS(ctx *Context, cb func(string)) *fsnotify.Watcher {
@@ -49,7 +49,7 @@ func WatchFS(ctx *Context, cb func(string)) *fsnotify.Watcher {
 				if !ok {
 					return
 				}
-				log.Println("error:", err)
+				log.Print("error: %s\n", err)
 			}
 		}
 	}()

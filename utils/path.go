@@ -2,17 +2,14 @@ package utils
 
 import (
 	"fmt"
-	"os"
 	"os/user"
 	"path/filepath"
 	"strings"
+
+	"github.com/chigopher/pathlib"
 )
 
-type Path struct {
-	Path string
-}
-
-// KndPath represents a name__kind.ext path
+// KindPath represents a name__kind.ext path
 type KindPath struct {
 	Name string
 	Kind string
@@ -52,97 +49,59 @@ func (f *KindPath) String() string {
 // resolve the KindPath to a path that exists, searching backward through a list of dirs
 func (f *KindPath) Resolve(dirs ...string) (string, error) {
 	if len(dirs) == 0 {
-		p := Path{Path: "~/go/src/github.com/labctl/labctl/templates"}
-		err := p.ExpandUser()
+		p, err := NewPathExpandUser("~/go/src/github.com/labctl/labctl/templates")
 		if err != nil {
 			return "", err
 		}
-		dirs = []string{p.Path, "/etc/labctl/templates", "."}
+		dirs = []string{p.String(), "/etc/labctl/templates", "."}
 	}
-	p := Path{Path: f.String()}
-	if p.Exists() == nil {
-		return p.Path, nil
+	p := pathlib.NewPath(f.String())
+	exist, err := p.Exists()
+	if exist && err == nil {
+		return p.String(), nil
 	}
 	if f.dir == "" {
 		for i := len(dirs) - 1; i >= 0; i-- {
-			_p := Path{Path: filepath.Join(dirs[i], p.Path)}
-			if _p.Exists() == nil {
-				return _p.Path, nil
+			_p := pathlib.NewPath(dirs[i]).JoinPath(p)
+			exist, err := _p.Exists()
+			if exist && err == nil {
+				return _p.String(), nil
 			}
 		}
 	}
-	return "", fmt.Errorf("file not found %s", p.Path)
+	return "", fmt.Errorf("file not found %s", p.String())
 }
 
-func (p *Path) String() string {
-	return p.Path
-}
-
-// make this an absolute path (remove ..), expand user and test if exists (strict)
-// Returns nil if all ok
-func (p *Path) Resolve(strict ...bool) error {
-	if len(strict) == 0 {
-		strict = []bool{false}
-	}
-	err := p.ExpandUser()
-	if err != nil {
-		return err
-	}
-
-	if !filepath.IsAbs(p.Path) {
-		p.Path, err = filepath.Abs(p.Path)
-		if err != nil {
-			return err
-		}
-	}
-	if strict[0] {
-		return p.Exists()
-	}
-	return nil
-}
-
-// returns nil if file exists, else error
-func (p *Path) Exists() error {
-	if p.Path == "" {
-		return fmt.Errorf("empty path")
-	}
-	_, err := os.Stat(p.Path)
-	if err == nil {
-		return nil
-	} else if os.IsNotExist(err) {
-		return fmt.Errorf("file does not exist: %s", p.Path)
-	}
-	return fmt.Errorf("cannot access file %s: %s", p.Path, err)
-}
-
-// expand the user's home directory in a file path
-func (p *Path) ExpandUser() error {
-	if p.Path == "" || p.Path[0] != '~' {
-		return nil
-	}
-	usr, err := user.Current()
-	if err != nil {
-		return fmt.Errorf("cannot expand home directory: %s", err)
-	}
-	p.Path = filepath.Join(usr.HomeDir, p.Path[1:])
-	return nil
-}
-
-// ReadFile for all files matching a pattern
-func (p *Path) ReadFiles(pattern string) (map[string]string, error) {
+func ReadFiles(path *pathlib.Path, pattern string) (map[string]string, error) {
 	res := make(map[string]string)
-	glob, err := filepath.Glob(filepath.Join(p.Path, pattern))
+	paths, err := path.Glob(pattern)
 	if err != nil {
 		res["readme.md"] = err.Error()
 		return res, nil
 	}
-	for _, fn := range glob {
-		b, err := os.ReadFile(fn)
+
+	for _, pth := range paths {
+		content, err := pth.ReadFile()
 		if err != nil {
-			res[fn+" *"] = err.Error()
+			res[pth.Name()+" *"] = err.Error()
 			continue
 		}
-		res[filepath.Base(fn)] = string(b[:])
+		res[pth.Name()] = string(content[:])
+	}
+	return res, nil
+}
+
+func NewPathExpandUser(p string) (*pathlib.Path, error) {
+	if strings.HasPrefix(p, "~/") {
+		usr, err := user.Current()
+		if err != nil {
+			return nil, fmt.Errorf("cannot expand home directory %v", err)
+		}
+		p = filepath.Join(usr.HomeDir, p[2:])
+	}
+	res, err := pathlib.NewPath(p).ResolveAll()
+	if err != nil {
+		return nil, fmt.Errorf("could not resolve %s: %v", p, err)
 	}
 	return res, nil
 }

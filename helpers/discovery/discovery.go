@@ -63,7 +63,7 @@ func (c *DiscoverTemplate) Load(filename string) error {
 
 // Parses the show command using the TextFSM template
 // Returns TextFSM's parser.Dict
-func (c *DiscoverTemplate) ParseShow(show string) ([]map[string]interface{}, error) {
+func (c *DiscoverTemplate) ParseShow(show string) ([]map[string]any, error) {
 	fsm := gotextfsm.TextFSM{}
 	err := fsm.ParseString(c.ParseTemplate)
 	if err != nil {
@@ -81,7 +81,7 @@ func (c *DiscoverTemplate) ParseShow(show string) ([]map[string]interface{}, err
 }
 
 // ProcessShow parses the show (ParseShow) and then transforms it using the OutputTemplate
-func (c *DiscoverTemplate) ProcessShow(show, custom_output string) ([]map[string]interface{}, error) {
+func (c *DiscoverTemplate) ProcessShow(show, custom_output string) ([]map[string]any, error) {
 	res, err := c.ParseShow(show)
 	if err != nil {
 		return nil, err
@@ -108,7 +108,7 @@ func (c *DiscoverTemplate) ProcessShow(show, custom_output string) ([]map[string
 		return nil, err
 	}
 
-	yaml_result := make(map[string]interface{})
+	yaml_result := make(map[string]any)
 
 	err = yaml.Unmarshal(buf.Bytes(), yaml_result)
 	if err != nil {

@@ -1,0 +1,38 @@
+name: topoa
+
+topology:
+  kinds:
+    nokia_srsim:
+      image: registry.srlinux.dev/pub/nokia_srsim:25.7.R1
+      license: ~/license/sr-sim.txt
+      config:
+        vars:
+          # isis_iid: [1]
+          as_number: 64496
+          ssh_password: NokiaSros1!
+  nodes:
+    PE1:
+      kind: nokia_srsim
+      config:
+        vars:
+          clab_system_ip: 192.0.2.1/32
+          system_ipv6: 2001:db8:33ac:2200::3:1/128
+          isis_iid: [ 0 ]
+
+    PE2:
+      kind: nokia_srsim
+      config:
+        vars:
+          clab_system_ip: 192.0.2.2/32
+          system_ipv6: 2001:db8:33ac:2200::3:2/128
+          isis_iid: [ 0 ]
+
+
+  links:
+    - endpoints: [ PE1:eth1, PE2:eth1 ]
+      vars:
+        port: [ 1/1/c1/1, 1/1/c1/1 ]
+        clab_link_ip: 192.168.0.1/30
+        isis_iid: [ [ 0 ], [ 0 ] ]
+        cflow_parameters: sampling unicast type interface
+        vlan: 100

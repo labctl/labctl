@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/charmbracelet/log"
 )
 
 type WsMsgCode string
@@ -71,11 +71,11 @@ func (w *WsMessage) String() string {
 	return string(res)
 }
 
-func WsErrorf(ws chan<- interface{}, msg string, args ...interface{}) {
+func WsErrorf(ws chan<- any, msg string, args ...any) {
 	ws <- &WsMessage{Code: WscError, Msg: fmt.Sprintf(msg, args...)}
 }
 
-func WsWarnf(ws chan<- interface{}, msg string, args ...interface{}) {
+func WsWarnf(ws chan<- any, msg string, args ...any) {
 	ws <- &WsMessage{Code: WscWarn, Msg: fmt.Sprintf(msg, args...)}
 }
 

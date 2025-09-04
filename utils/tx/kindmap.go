@@ -1,6 +1,6 @@
 package tx
 
-import log "github.com/sirupsen/logrus"
+import "github.com/charmbracelet/log"
 
 type KindDef struct {
 	Platform string   `yaml:"platform"` // the scrapligo SSH platform definition
@@ -10,17 +10,35 @@ type KindDef struct {
 }
 
 var KindMap = map[string]KindDef{
-	"vr-sros": {
+	// "vr-sros": {
+	// 	Platform: "nokia_sros",
+	// 	Comment:  "#",
+	// 	Commit:   []string{"validate", "compare / ", "commit", "discard /"},
+	// 	Compare:  []string{"validate", "compare /", "discard /"},
+	// },
+	"nokia_sros": {
 		Platform: "nokia_sros",
 		Comment:  "#",
 		Commit:   []string{"validate", "compare / ", "commit", "discard /"},
 		Compare:  []string{"validate", "compare /", "discard /"},
 	},
-	"srl": {
+	"nokia_srsim": {
+		Platform: "nokia_sros",
+		Comment:  "#",
+		Commit:   []string{"validate", "compare / ", "commit", "discard /"},
+		Compare:  []string{"validate", "compare /", "discard /"},
+	},
+	// "srl": {
+	// 	Platform: "nokia_srl",
+	// 	Comment:  "#",
+	// 	Commit:   []string{"commit validate", "diff ", "commit now"},
+	// 	Compare:  []string{"commit validate", "diff", "discard now"},
+	// },
+	"nokia_srlinux": {
 		Platform: "nokia_srl",
 		Comment:  "#",
-		Commit:   []string{"commit validate", "diff ", "commit now"},
-		Compare:  []string{"commit validate", "diff", "discard now"},
+		Commit:   []string{"diff", "commit validate", "commit now"},
+		Compare:  []string{"diff", "discard now"},
 	},
 	"ceos": {
 		Platform: "arista_eos",

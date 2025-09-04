@@ -4,8 +4,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/charmbracelet/log"
+	"github.com/chigopher/pathlib"
 	"github.com/labctl/labctl/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 type Template struct {
@@ -38,9 +39,8 @@ func LoadTemplates(ctx *Context) (Templates, error) {
 	res := make(Templates)
 
 	for pp := ctx.TemplatePaths.Oldest(); pp != nil; pp = pp.Next() {
-		// log.Warnf("%s", pp.Value)
-		p := utils.Path{Path: pp.Value}
-		lres, err := p.ReadFiles("*.tmpl")
+		p := pathlib.NewPath(pp.Value)
+		lres, err := utils.ReadFiles(p, "*.tmpl")
 		if err != nil {
 			log.Errorf("Error reading templates in %s: %s", pp.Value, err)
 			continue

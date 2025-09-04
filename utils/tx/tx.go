@@ -3,7 +3,7 @@ package tx
 import (
 	"fmt"
 
-	"github.com/srl-labs/containerlab/clab/config"
+	"github.com/labctl/labctl/core/config"
 )
 
 var DebugCount = 0

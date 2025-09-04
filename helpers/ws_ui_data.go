@@ -1,10 +1,12 @@
 package helpers
 
 import (
+	"fmt"
 	"os"
 
+	"github.com/charmbracelet/log"
+	"github.com/chigopher/pathlib"
 	"github.com/gorilla/websocket"
-	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
@@ -17,10 +19,10 @@ type layouts struct {
 }
 
 type WsUiData struct {
-	Options   map[string]interface{} `json:"options"`   // A generic options dictionary for persistent UI options
-	Layouts   layouts                `json:"layouts"`   // layouts is a property of v-network-graph
-	Templates map[string]string      `json:"templates"` // Templates used by the UI etc
-	Context   *ContextJson           `json:"context"`   // Context with filename, template paths etc
+	Options   map[string]any    `json:"options"`   // A generic options dictionary for persistent UI options
+	Layouts   layouts           `json:"layouts"`   // layouts is a property of v-network-graph
+	Templates map[string]string `json:"templates"` // Templates used by the UI etc
+	Context   *ContextJson      `json:"context"`   // Context with filename, template paths etc
 }
 
 func NewWsUiData() *WsUiData {
@@ -28,7 +30,7 @@ func NewWsUiData() *WsUiData {
 		Layouts: layouts{
 			Nodes: make(layoutsNodes, 0),
 		},
-		Options:   make(map[string]interface{}, 0),
+		Options:   make(map[string]any, 0),
 		Templates: make(map[string]string),
 	}
 }
@@ -50,6 +52,9 @@ func (u *WsUiData) WriteFile(ctx *Context) {
 		fm = 0o664
 	}
 	log.Infof("Saving as %s", labfn)
+
+	// Migrate commands to MarkDown files
+	delete(u.Options, "commands")
 
 	data, err := yaml.Marshal(&u)
 	if err != nil {
@@ -75,6 +80,16 @@ func (u *WsUiData) ReadFile(ctx *Context) error {
 	if err != nil {
 		return err
 	}
+
+	// Migrate commands to MarkDown files
+	cmds, hascmd := u.Options["commands"]
+	if hascmd {
+		// migrate to old_command.md
+		ocp := pathlib.NewPath(ctx.LabctlFilename).Parent().Join("old_command.md")
+		cmdss := fmt.Sprintf("%v", cmds)
+		ocp.WriteFile([]byte(cmdss))
+		delete(u.Options, "commands")
+	}
 	return nil
 }
 
@@ -90,8 +105,8 @@ func WsUiUpdate(ctx *Context) *WsMessage {
 	return wsmsg
 }
 
-func WsMakeChannel(conn *websocket.Conn) chan<- interface{} {
-	c := make(chan interface{})
+func WsMakeChannel(conn *websocket.Conn) chan<- any {
+	c := make(chan any)
 
 	go func() {
 		for {

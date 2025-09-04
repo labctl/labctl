@@ -3,19 +3,19 @@ package app
 import (
 	"os"
 
+	"github.com/charmbracelet/log"
 	"github.com/labctl/labctl/helpers"
 	"github.com/labctl/labctl/helpers/discovery"
 	"github.com/labctl/labctl/utils/tx"
-	log "github.com/sirupsen/logrus"
 )
 
-func DiscoverTopo(templateName string, ctx *helpers.Context) (map[string][]map[string]interface{}, error) {
-	allConfig, err := LoadAndPrep(&ctx.NodeFilter, templateName, false)
+func DiscoverTopo(templateName string, ctx *helpers.Context, templateList []string, templatePaths []string) (map[string][]map[string]any, error) {
+	allConfig, err := LoadAndPrep(&ctx.NodeFilter, templateName, false, templateList, templatePaths)
 	if err != nil {
 		return nil, err
 	}
 
-	result := make(map[string][]map[string]interface{})
+	result := make(map[string][]map[string]any)
 
 	// discovery templates per kind
 	allDis := make(map[string]*discovery.DiscoverTemplate)
@@ -58,7 +58,7 @@ func DiscoverTopo(templateName string, ctx *helpers.Context) (map[string][]map[s
 	return result, nil
 }
 
-func DiscoverFile(template, infile string) ([]map[string]interface{}, error) {
+func DiscoverFile(template, infile string) ([]map[string]any, error) {
 	dis := discovery.DiscoverTemplate{}
 	err := dis.Load(template)
 	if err != nil {

@@ -5,16 +5,16 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/labctl/labctl/core/config"
 	"github.com/scrapli/scrapligo/driver/opoptions"
 	"github.com/scrapli/scrapligo/driver/options"
 	"github.com/scrapli/scrapligo/logging"
 	"github.com/scrapli/scrapligo/platform"
 	"github.com/scrapli/scrapligo/response"
 	"github.com/scrapli/scrapligo/util"
-	"github.com/srl-labs/containerlab/clab/config"
-	"github.com/srl-labs/containerlab/types"
+	clabtypes "github.com/srl-labs/containerlab/types"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/charmbracelet/log"
 )
 
 // configLines that will be sent to the NE
@@ -32,13 +32,14 @@ const (
 )
 
 type SSHTx struct { // implement the Tx interface
-	TargetNode *types.NodeConfig
-	Vars       map[string]interface{}
-	Config     []configLines
+	TargetNode  *clabtypes.NodeConfig
+	Vars        map[string]any
+	Config      []configLines
+	Credentials []string
 }
 
 // Get a value from map with a default
-func get(vars map[string]interface{}, key string, defaultv string) string {
+func get(vars map[string]any, key string, defaultv string) string {
 	if val, ok := vars[key]; ok {
 		return fmt.Sprintf("%v", val)
 	}
@@ -52,6 +53,7 @@ func (st *SSHTx) Prepare(c *config.NodeConfig) (int, error) {
 	st.Config = make([]configLines, 0)
 	st.TargetNode = c.TargetNode
 	st.Vars = c.Vars
+	st.Credentials = c.Credentials
 
 	for i, data := range c.Data {
 		res := configLines{
@@ -78,13 +80,9 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 		return nil, nil
 	}
 
-	// Usernames & passwords
-	ssh_user, ssh_pass := "admin", "admin"
-	// if v, ok := nodes.GetDefaultCredentialsForKind(st.TargetNode.Kind); ok == nil {
-	// 	ssh_user, ssh_pass = v[0], v[1]
-	// }
-	ssh_user = get(st.Vars, vkSshUser, ssh_user)
-	ssh_pass = get(st.Vars, vkSshPass, ssh_pass)
+	// Username & password
+	ssh_user := get(st.Vars, vkSshUser, st.Credentials[0])
+	ssh_pass := get(st.Vars, vkSshPass, st.Credentials[1])
 
 	// Host & ports, allows an alternative to containerlab's host entries
 	ssh_host := get(st.Vars, vkSshHost, st.TargetNode.LongName)
@@ -115,9 +113,9 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 		// Host clab-*
 		// .  HostkeyAlgorithms +ssh-rsa
 		// .  PubkeyAcceptedAlgorithms +ssh-rsa
+		options.WithLogger(scrapliLoggerInstance()),
+		options.WithTermWidth(250),
 	}
-
-	opt = append(opt, options.WithLogger(scrapliLoggerInstance()))
 
 	p, err := platform.NewPlatform(ssh_platform, ssh_host, opt...)
 	if err != nil {
@@ -143,9 +141,10 @@ func (st *SSHTx) Send(action Action) ([]*Response, error) {
 		// Transaction commands
 		var actionCmds []string
 		if km, ok := KindMap[st.TargetNode.Kind]; ok {
-			if action == ACompare {
+			switch action {
+			case ACompare:
 				actionCmds = km.Compare
-			} else if action == ACommit {
+			case ACommit:
 				actionCmds = km.Commit
 			}
 		}
@@ -239,8 +238,12 @@ func scrapliLoggerInstance() *logging.Instance {
 		fun = log.Debug
 	}
 
+	lg := func(a ...any) {
+		fun(a[0], a[1:]...)
+	}
+
 	li, err := logging.NewInstance(
-		logging.WithLevel(lvl), logging.WithLogger(fun),
+		logging.WithLevel(lvl), logging.WithLogger(lg),
 	)
 	if err != nil {
 		log.Error(err)
