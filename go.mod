@@ -19,7 +19,7 @@ require (
 	github.com/posener/complete v1.2.3
 	github.com/rs/cors v1.11.1
 	github.com/scrapli/scrapligo v1.3.3
-	github.com/sirikothe/gotextfsm v1.0.1-0.20200816110946-6aa2cfd355e4
+	github.com/sirikothe/gotextfsm v1.1.0
 	github.com/sorenisanerd/gotty v1.6.0
 	github.com/srl-labs/containerlab v0.69.3
 	github.com/willabides/kongplete v0.4.0
