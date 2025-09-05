@@ -3,7 +3,7 @@ module github.com/labctl/labctl
 go 1.24.0
 
 require (
-	dario.cat/mergo v1.0.1
+	dario.cat/mergo v1.0.2
 	github.com/alecthomas/assert/v2 v2.11.0
 	github.com/alecthomas/kong v1.12.1
 	github.com/charmbracelet/log v0.4.2
