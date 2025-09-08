@@ -1,0 +1,20 @@
+version: "2"
+linters:
+  settings:
+    govet:
+      settings:
+        printf:
+          funcs:
+            - (github.com/golangci/golangci-lint/pkg/logutils.Log).Infof
+            - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
+            - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
+            - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
+    importas:
+      alias:
+        - pkg: github.com/srl-labs/containerlab/(\w+)
+          alias: clab$1
+        - pkg: github.com/srl-labs/containerlab/(\w+)/(\w+)
+          alias: clab$1$2
+      no-unaliased: true
+    lll:
+      line-length: 100

@@ -11,7 +11,7 @@ env:
 
 jobs:
   golangci:
-    name: lint
+    name: Run static analysis
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -22,9 +22,10 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
-          version: v2.1
+          version: v2.3
+
   labctl-test:
-    name: Run static analysis & tests
+    name: Run tests
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
