@@ -51,9 +51,13 @@ func (s *Settings) AddSettings(path string, silent bool) error {
 }
 
 func (s *Settings) load(path string, silent bool) error {
-	p, err := utils.NewPathExpandUser(path)
+	p := utils.NewPathExpandUser(path)
+	exist, err := p.Exists()
+	if !exist {
+		return nil
+	}
 	if err != nil {
-		log.Error("could not load file", "name", p.String(), "err", err)
+		log.Error("could not load file", "name", path, "err", err)
 		return err
 	}
 	setByte, err := p.ReadFile()

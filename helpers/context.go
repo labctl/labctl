@@ -81,9 +81,9 @@ func (c *Context) InitPaths(topofile string, paths []string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	p, err := utils.NewPathExpandUser(c.TopoFilename)
+	p, err := utils.NewPathExpandUser(c.TopoFilename).ResolveAll()
 	if err != nil {
-		log.Fatalf("cannot access topo file %s: %s", topofile, err)
+		log.Fatal("cannot access topo file", "file", topofile, "err", err)
 	}
 	c.TopoFilename = p.String()
 
@@ -121,9 +121,15 @@ func ensureTopo(topo string) (string, error) {
 func initTemplatePaths(paths []string) (*orderedmap.OrderedMap[string, string], error) {
 	res := orderedmap.New[string, string]()
 	for _, ps := range paths {
-		p, err := utils.NewPathExpandUser(ps)
+		p := utils.NewPathExpandUser(ps)
+		exist, err := p.DirExists()
 		if err != nil {
-			return nil, fmt.Errorf("path %s: %s", ps, err)
+			log.Error("path error", "path", ps, "err", err)
+			continue
+		}
+		if !exist {
+			log.Warn("path does not exist", "path", ps)
+			continue
 		}
 		n := filepath.Base(p.Name())
 		i := 1

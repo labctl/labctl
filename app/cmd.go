@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"os"
 
 	"github.com/alecthomas/kong"
@@ -34,7 +35,7 @@ func GetCmdLineParser(ast any) *kong.Kong {
 			Compact: true,
 			Summary: false,
 		}),
-		kong.Configuration(kong.JSON, "~/.labctl.json", ".labctl.json"),
+		kong.Configuration(kong.JSON), //, "~/.labctl.json", ".labctl.json"),
 	)
 }
 
@@ -50,9 +51,11 @@ func Main() {
 		kongplete.WithPredictor("dir", complete.PredictDirs("*")),
 	)
 
-	_, err := parser.LoadConfig(".labctl.json")
-	if err != nil {
-		log.Errorf("failed to load config: %v", err)
+	for _, cmdfile := range []string{"~/.labctl.json", ".labctl.json"} {
+		_, err := parser.LoadConfig(cmdfile)
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			log.Error("failed to load parameters", "file", cmdfile, "err", err)
+		}
 	}
 
 	kctx, err := parser.Parse(os.Args[1:])

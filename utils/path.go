@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/charmbracelet/log"
 	"github.com/chigopher/pathlib"
 )
 
@@ -49,9 +50,10 @@ func (f *KindPath) String() string {
 // resolve the KindPath to a path that exists, searching backward through a list of dirs
 func (f *KindPath) Resolve(dirs ...string) (string, error) {
 	if len(dirs) == 0 {
-		p, err := NewPathExpandUser("~/go/src/github.com/labctl/labctl/templates")
+		p := NewPathExpandUser("~/go/src/github.com/labctl/labctl/templates")
+		p, err := p.ResolveAll()
 		if err != nil {
-			return "", err
+			log.Warn("invalid path", "err", err)
 		}
 		dirs = []string{p.String(), "/etc/labctl/templates", "."}
 	}
@@ -91,17 +93,13 @@ func ReadFiles(path *pathlib.Path, pattern string) (map[string]string, error) {
 	return res, nil
 }
 
-func NewPathExpandUser(p string) (*pathlib.Path, error) {
-	if strings.HasPrefix(p, "~/") {
+func NewPathExpandUser(path string) *pathlib.Path {
+	if strings.HasPrefix(path, "~/") {
 		usr, err := user.Current()
-		if err != nil {
-			return nil, fmt.Errorf("cannot expand home directory %v", err)
+		if err == nil {
+			return pathlib.NewPath(usr.HomeDir).Join(path[2:])
 		}
-		p = filepath.Join(usr.HomeDir, p[2:])
+		log.Warn("cannot expand home directory", "err", err)
 	}
-	res, err := pathlib.NewPath(p).ResolveAll()
-	if err != nil {
-		return nil, fmt.Errorf("could not resolve %s: %v", p, err)
-	}
-	return res, nil
+	return pathlib.NewPath(path)
 }
