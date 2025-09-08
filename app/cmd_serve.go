@@ -85,7 +85,7 @@ func (r *CmdServe) Run(ctx *helpers.Context) error {
 	if host == "" {
 		url = fmt.Sprintf("http://localhost%s or http://%s%s", r.Addr, utils.GetOutboundIP(), r.Addr)
 	}
-	logLatestVersion(5)
+	LatestVersion.Log(5)
 	log.Infof("Access the web server on %s", url)
 	return http.ListenAndServe(r.Addr, handler)
 }

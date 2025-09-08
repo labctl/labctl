@@ -82,7 +82,7 @@ func Main() {
 		Output:     &helpers.LogOutput{},
 	}
 
-	fetchLatestVersion()
+	LatestVersion.Fetch()
 
 	utils.CheckRoot()
 
@@ -90,5 +90,5 @@ func Main() {
 	err = kctx.Run(Ctx)
 	kctx.FatalIfErrorf(err)
 
-	logLatestVersion(1)
+	LatestVersion.Log(1)
 }

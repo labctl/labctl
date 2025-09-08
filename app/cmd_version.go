@@ -2,13 +2,16 @@ package app
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/charmbracelet/log"
+	"github.com/chigopher/pathlib"
 	"github.com/fatih/color"
 	"github.com/labctl/labctl/helpers"
 	"github.com/labctl/labctl/utils/colorize"
@@ -31,7 +34,7 @@ func (r *CmdVersion) Run(ctx *helpers.Context) error {
 	fmt.Printf("      date: %s\n", date)
 	fmt.Print("\n")
 
-	v, err := latestVersion(10)
+	v, err := LatestVersion.Get(10)
 	if err != nil {
 		fmt.Printf("could not fetch latest version: %s\n", err)
 	}
@@ -56,20 +59,29 @@ type ghapi struct {
 	TagName string `json:"tag_name"`
 }
 
-var versionCh chan string
-
-// Start the process to fetch the latest tag
-// Retrieve it with latestVersion(timeout)
-func fetchLatestVersion() {
-	versionCh = make(chan string, 1)
-	go _fetchLatestVersion()
+type Version struct {
+	ch chan string
 }
 
-func _fetchLatestVersion() {
+var LatestVersion Version
+
+// Fetch the latest version in the background
+func (v *Version) Fetch() {
+	v.ch = make(chan string, 1)
+	go v.fetch()
+}
+
+func (v *Version) fetch() {
+	fVer := fileVersion()
+	if fVer != "" {
+		v.ch <- fVer
+		return
+	}
+
 	client := &http.Client{}
 	res, err := client.Get("https://api.github.com/repos/labctl/labctl/releases/latest")
 	if err != nil || res.StatusCode != 200 {
-		versionCh <- fmt.Sprintf("error occurred during latest version fetch: %v [%d]", err, res.StatusCode)
+		v.ch <- fmt.Sprintf("error occurred during latest version fetch: %v [%d]", err, res.StatusCode)
 		return
 	}
 
@@ -82,55 +94,55 @@ func _fetchLatestVersion() {
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		versionCh <- fmt.Sprintf("error reading version response: %s", err)
+		v.ch <- fmt.Sprintf("error reading version response: %s", err)
 		return
 	}
 
 	r := ghapi{}
 	err = json.Unmarshal(body, &r)
 	if err != nil {
-		versionCh <- fmt.Sprintf("error decoding GitHub API response: %s", err)
+		v.ch <- fmt.Sprintf("error decoding GitHub API response: %s", err)
 		return
 	}
 	ver := strings.TrimLeft(r.TagName, "v")
 	if version == "0.0.0" {
 		version = ver + "-next"
 	}
-	if Ctx.DebugCount > 3 {
+	if Ctx != nil && Ctx.DebugCount > 3 {
 		log.Debugf("Current version: %s, available version: %s", version, ver)
 	}
-	versionCh <- ver
+	v.ch <- ver
+
+	fileVersion(ver)
 }
 
-// Log the latest version if already available (and not already done).
-// Dont wait more than 1 second
-func logLatestVersion(delay_s time.Duration) {
-	v, err := latestVersion(delay_s) // only wait for 1 second usually
+// Log the latest version. Delay up to delay_s
+func (v *Version) Log(delay_s time.Duration) {
+	res, err := v.Get(delay_s) // only wait for 1 second usually
 	if err != nil {
-		log.Errorf("%s", err)
+		log.Error(err)
 	}
-	if v != "" && v != version {
-		log.Infof("🎉 New labctl version %s available! (current version: %s)", v, version)
+	if res != "" && res != version {
+		log.Infof("🎉 New labctl version %s available! (current version: %s)", res, version)
 	}
 }
 
-// Get the latestVersion. Should follow fetchLatestVersion
-// Can potentially block up to delay_s seconds
-func latestVersion(delay_s time.Duration) (string, error) {
-	if versionCh == nil {
+// Get the latest version from the channel
+func (v *Version) Get(delay_s time.Duration) (string, error) {
+	if v.ch == nil {
 		return "", nil
 	}
 	defer func() {
-		close(versionCh)
-		versionCh = nil
+		close(v.ch)
+		v.ch = nil
 	}()
 
-	if Ctx.DebugCount > 1 && delay_s > 1 {
+	if Ctx != nil && Ctx.DebugCount > 1 && delay_s > 1 {
 		log.Debugf("Waiting up to %v for the labctl version check to github.com", delay_s*time.Second)
 	}
 
 	select {
-	case ver, ok := <-versionCh:
+	case ver, ok := <-v.ch:
 		if ok {
 			if strings.HasPrefix(ver, "error") {
 				return "", fmt.Errorf("%s", ver)
@@ -141,4 +153,34 @@ func latestVersion(delay_s time.Duration) (string, error) {
 		return "", fmt.Errorf("timeout fetching the new version")
 	}
 	return "", fmt.Errorf("could not check the version")
+}
+
+// Set/Get the version from a file (mtime < 1hour ago)
+func fileVersion(setV ...string) string {
+	p := pathlib.NewPath(os.TempDir()).Join(".labctl.version")
+	if len(setV) > 0 {
+		err := p.WriteFile([]byte(strings.Join(setV, ".")))
+		if err != nil {
+			log.Warn("could not write version file", "file", p.String(), "err", err)
+		}
+		return ""
+	}
+
+	info, err := p.Stat()
+	if errors.Is(err, os.ErrNotExist) {
+		return ""
+	}
+
+	if err != nil || info.ModTime().Add(time.Hour).Before(time.Now()) {
+		err := p.Remove()
+		if err != nil {
+			log.Warn("could not access version file", "file", p.String(), "err", err)
+		}
+		return ""
+	}
+	val, err := p.ReadFile()
+	if err != nil {
+		log.Warn("could not read version file", "file", p.String(), "err", err)
+	}
+	return string(val)
 }
