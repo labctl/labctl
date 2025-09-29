@@ -21,7 +21,7 @@ require (
 	github.com/scrapli/scrapligo v1.3.3
 	github.com/sirikothe/gotextfsm v1.1.0
 	github.com/sorenisanerd/gotty v1.6.0
-	github.com/srl-labs/containerlab v0.69.3
+	github.com/srl-labs/containerlab v0.70.2
 	github.com/willabides/kongplete v0.4.0
 	github.com/wk8/go-ordered-map/v2 v2.1.8
 	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b
@@ -44,7 +44,9 @@ require (
 	github.com/awalterschulze/gographviz v2.0.3+incompatible // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
+	github.com/beevik/etree v1.6.0 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
+	github.com/brunoga/deep v1.2.5 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/c2h5oh/datasize v0.0.0-20231215233829-aa82cc1e6500 // indirect
 	github.com/carlmontanari/difflibgo v0.0.0-20240227210139-93685b1c22ae // indirect
@@ -119,6 +121,7 @@ require (
 	github.com/go-openapi/swag/stringutils v0.24.0 // indirect
 	github.com/go-openapi/swag/typeutils v0.24.0 // indirect
 	github.com/go-openapi/swag/yamlutils v0.24.0 // indirect
+	github.com/go-xmlfmt/xmlfmt v1.1.3 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/godbus/dbus/v5 v5.1.1-0.20241109141217-c266b19b28e9 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
