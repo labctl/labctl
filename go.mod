@@ -25,7 +25,7 @@ require (
 	github.com/willabides/kongplete v0.4.0
 	github.com/wk8/go-ordered-map/v2 v2.1.8
 	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b
-	golang.org/x/term v0.35.0
+	golang.org/x/term v0.39.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -239,7 +239,7 @@ require (
 	golang.org/x/mod v0.28.0 // indirect
 	golang.org/x/net v0.43.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
-	golang.org/x/sys v0.36.0 // indirect
+	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/text v0.29.0 // indirect
 	golang.org/x/time v0.13.0 // indirect
 	golang.org/x/tools v0.36.0 // indirect
